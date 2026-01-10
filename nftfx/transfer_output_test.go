@@ -10,7 +10,7 @@ import (
 
 	"github.com/luxfi/ids"
 	"github.com/luxfi/vm/components/verify"
-	"github.com/luxfi/utxo/fx/secp256k1fx"
+	"github.com/luxfi/utxo/secp256k1fx"
 )
 
 func TestTransferOutputVerifyNil(t *testing.T) {

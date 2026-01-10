@@ -14,7 +14,7 @@ import (
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
 	"github.com/luxfi/log"
-	"github.com/luxfi/utxo/fx/secp256k1fx"
+	"github.com/luxfi/utxo/secp256k1fx"
 )
 
 var (

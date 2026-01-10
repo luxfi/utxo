@@ -8,7 +8,7 @@ import (
 	"errors"
 
 	"github.com/luxfi/vm/components/verify"
-	"github.com/luxfi/utxo/fx/secp256k1fx"
+	"github.com/luxfi/utxo/secp256k1fx"
 )
 
 var (
