@@ -3,7 +3,7 @@
 
 package propertyfx
 
-import "github.com/luxfi/utxo/fx/secp256k1fx"
+import "github.com/luxfi/utxo/secp256k1fx"
 
 type Credential struct {
 	secp256k1fx.Credential `serialize:"true"`

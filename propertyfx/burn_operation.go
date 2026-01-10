@@ -6,7 +6,7 @@ package propertyfx
 import (
 	consensusctx "github.com/luxfi/consensus/context"
 	"github.com/luxfi/vm/components/verify"
-	"github.com/luxfi/utxo/fx/secp256k1fx"
+	"github.com/luxfi/utxo/secp256k1fx"
 )
 
 type BurnOperation struct {
