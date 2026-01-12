@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	consensusctx "github.com/luxfi/consensus/context"
+	"github.com/luxfi/consensus/runtime"
 	"github.com/luxfi/vm/components/verify"
 )
 
@@ -31,7 +31,7 @@ func (out *TransferOutput) InitializeWithContext(ctx context.Context) error {
 }
 
 // InitCtx sets the context for address formatting
-func (out *TransferOutput) InitCtx(ctx *consensusctx.Context) {
+func (out *TransferOutput) InitCtx(ctx *runtime.Runtime) {
 	out.OutputOwners.InitCtx(ctx)
 }
 
