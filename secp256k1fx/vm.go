@@ -5,7 +5,7 @@ package secp256k1fx
 
 import (
 	"github.com/luxfi/codec"
-	"github.com/luxfi/log"
+	log "github.com/luxfi/log"
 	"github.com/luxfi/timer/mockable"
 )
 

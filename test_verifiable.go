@@ -4,7 +4,7 @@
 package utxo
 
 import (
-	consensusctx "github.com/luxfi/consensus/context"
+	"github.com/luxfi/consensus/runtime"
 	"github.com/luxfi/vm/components/verify"
 )
 
@@ -20,7 +20,7 @@ type TestState struct {
 	Err error `serialize:"-" json:"-"`
 }
 
-func (*TestState) InitCtx(*consensusctx.Context) {}
+func (*TestState) InitCtx(*runtime.Runtime) {}
 
 func (v *TestState) Verify() error {
 	return v.Err
@@ -32,7 +32,7 @@ type TestTransferable struct {
 	Val uint64 `serialize:"true"`
 }
 
-func (*TestTransferable) InitCtx(*consensusctx.Context) {}
+func (*TestTransferable) InitCtx(*runtime.Runtime) {}
 
 func (t *TestTransferable) Amount() uint64 {
 	return t.Val

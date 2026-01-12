@@ -14,7 +14,7 @@ require (
 	github.com/luxfi/geth v1.16.69
 	github.com/luxfi/ids v1.2.9
 	github.com/luxfi/keychain v1.0.1
-	github.com/luxfi/log v1.2.1
+	github.com/luxfi/log v1.3.0
 	github.com/luxfi/math v1.2.3
 	github.com/luxfi/metric v1.4.10
 	github.com/luxfi/timer v1.0.1
@@ -47,6 +47,8 @@ require (
 	github.com/luxfi/sampler v1.0.0 // indirect
 	github.com/luxfi/sdk v1.16.42 // indirect
 	github.com/luxfi/tls v1.0.2 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/melbahja/goph v1.4.0 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
@@ -69,6 +71,11 @@ require (
 	golang.org/x/sys v0.39.0 // indirect
 	gonum.org/v1/gonum v0.16.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
-	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/luxfi/log => ../log
+
+replace github.com/luxfi/consensus => ../consensus
+
+replace github.com/luxfi/api => ../api

@@ -9,7 +9,7 @@ import (
 	"sort"
 
 	"github.com/luxfi/codec"
-	consensusctx "github.com/luxfi/consensus/context"
+	"github.com/luxfi/consensus/runtime"
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
 	"github.com/luxfi/vm/components/verify"
@@ -56,7 +56,7 @@ type TransferableIn interface {
 type TransferableOut interface {
 	verify.State
 	Amounter
-	InitCtx(*consensusctx.Context)
+	InitCtx(*runtime.Runtime)
 }
 
 type TransferableOutput struct {
@@ -66,7 +66,7 @@ type TransferableOutput struct {
 	Out  TransferableOut `serialize:"true"  json:"output"`
 }
 
-func (out *TransferableOutput) InitCtx(ctx *consensusctx.Context) {
+func (out *TransferableOutput) InitCtx(ctx *runtime.Runtime) {
 	out.Out.InitCtx(ctx)
 }
 

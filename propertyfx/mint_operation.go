@@ -6,7 +6,7 @@ package propertyfx
 import (
 	"errors"
 
-	consensusctx "github.com/luxfi/consensus/context"
+	"github.com/luxfi/consensus/runtime"
 
 	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
@@ -20,13 +20,13 @@ type MintOperation struct {
 	OwnedOutput OwnedOutput       `serialize:"true" json:"ownedOutput"`
 }
 
-func (op *MintOperation) InitCtx(ctx *consensusctx.Context) {
+func (op *MintOperation) InitCtx(ctx *runtime.Runtime) {
 	op.MintOutput.OutputOwners.InitCtx(ctx)
 	op.OwnedOutput.OutputOwners.InitCtx(ctx)
 }
 
 // InitializeContext implements the fxs.FxOperation interface
-func (op *MintOperation) InitializeContext(ctx *consensusctx.Context) error {
+func (op *MintOperation) InitializeContext(ctx *runtime.Runtime) error {
 	op.InitCtx(ctx)
 	return nil
 }

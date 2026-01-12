@@ -6,7 +6,7 @@ package nftfx
 import (
 	"errors"
 
-	consensusctx "github.com/luxfi/consensus/context"
+	"github.com/luxfi/consensus/runtime"
 
 	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
@@ -19,11 +19,11 @@ type TransferOperation struct {
 	Output TransferOutput    `serialize:"true" json:"output"`
 }
 
-func (op *TransferOperation) InitCtx(ctx *consensusctx.Context) {
+func (op *TransferOperation) InitCtx(ctx *runtime.Runtime) {
 	op.Output.OutputOwners.InitCtx(ctx)
 }
 
-func (op *TransferOperation) InitializeContext(ctx *consensusctx.Context) error {
+func (op *TransferOperation) InitializeContext(ctx *runtime.Runtime) error {
 	op.InitCtx(ctx)
 	return nil
 }
