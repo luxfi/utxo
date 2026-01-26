@@ -6,7 +6,7 @@ package secp256k1fx
 import (
 	"errors"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 	"github.com/luxfi/vm/components/verify"
 )
 
@@ -18,13 +18,13 @@ type MintOperation struct {
 	TransferOutput TransferOutput `serialize:"true" json:"transferOutput"`
 }
 
-func (op *MintOperation) InitCtx(ctx *runtime.Runtime) {
-	op.MintOutput.OutputOwners.InitCtx(ctx)
-	op.TransferOutput.OutputOwners.InitCtx(ctx)
+func (op *MintOperation) InitRuntime(rt *runtime.Runtime) {
+	op.MintOutput.OutputOwners.InitRuntime(rt)
+	op.TransferOutput.OutputOwners.InitRuntime(rt)
 }
 
-func (op *MintOperation) InitializeContext(ctx *runtime.Runtime) error {
-	op.InitCtx(ctx)
+func (op *MintOperation) InitializeRuntime(rt *runtime.Runtime) error {
+	op.InitRuntime(rt)
 	return nil
 }
 

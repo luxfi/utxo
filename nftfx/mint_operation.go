@@ -6,7 +6,7 @@ package nftfx
 import (
 	"errors"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 
 	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
@@ -22,14 +22,14 @@ type MintOperation struct {
 	Outputs   []*secp256k1fx.OutputOwners `serialize:"true" json:"outputs"`
 }
 
-func (op *MintOperation) InitCtx(ctx *runtime.Runtime) {
+func (op *MintOperation) InitRuntime(rt *runtime.Runtime) {
 	for _, out := range op.Outputs {
-		out.InitCtx(ctx)
+		out.InitRuntime(rt)
 	}
 }
 
-func (op *MintOperation) InitializeContext(ctx *runtime.Runtime) error {
-	op.InitCtx(ctx)
+func (op *MintOperation) InitializeRuntime(rt *runtime.Runtime) error {
+	op.InitRuntime(rt)
 	return nil
 }
 

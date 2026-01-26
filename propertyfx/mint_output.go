@@ -4,7 +4,7 @@
 package propertyfx
 
 import (
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 
 	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
@@ -18,6 +18,6 @@ type MintOutput struct {
 	secp256k1fx.OutputOwners `serialize:"true"`
 }
 
-func (out *MintOutput) InitCtx(ctx *runtime.Runtime) {
-	out.OutputOwners.InitCtx(ctx)
+func (out *MintOutput) InitRuntime(rt *runtime.Runtime) {
+	out.OutputOwners.InitRuntime(rt)
 }
