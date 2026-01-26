@@ -8,7 +8,7 @@ import (
 	"errors"
 	"reflect"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 
 	"github.com/luxfi/address"
 	"github.com/luxfi/ids"
@@ -30,22 +30,22 @@ type OutputOwners struct {
 	Threshold uint32        `serialize:"true" json:"threshold"`
 	Addrs     []ids.ShortID `serialize:"true" json:"addresses"`
 
-	// ctx is used in MarshalJSON to convert Addrs into human readable
+	// rt is used in MarshalJSON to convert Addrs into human readable
 	// format with ChainID and NetworkID. Unexported because we don't use
 	// it outside this object.
-	ctx *runtime.Runtime `serialize:"-"`
+	rt *runtime.Runtime `serialize:"-"`
 }
 
-// InitCtx allows addresses to be formatted into their human readable format
+// InitRuntime allows addresses to be formatted into their human readable format
 // during json marshalling.
-func (out *OutputOwners) InitCtx(ctx *runtime.Runtime) {
-	out.ctx = ctx
+func (out *OutputOwners) InitRuntime(rt *runtime.Runtime) {
+	out.rt = rt
 }
 
 // MarshalJSON marshals OutputOwners as JSON with human readable addresses.
-// OutputOwners.InitCtx must be called before marshalling this or one of
-// the parent objects to json. Uses the OutputOwners.ctx method to format
-// the addresses. Returns errMarshal error if OutputOwners.ctx is not set.
+// OutputOwners.InitRuntime must be called before marshalling this or one of
+// the parent objects to json. Uses the OutputOwners.rt method to format
+// the addresses. Returns errMarshal error if OutputOwners.rt is not set.
 func (out *OutputOwners) MarshalJSON() ([]byte, error) {
 	result, err := out.Fields()
 	if err != nil {
@@ -61,8 +61,8 @@ func (out *OutputOwners) Fields() (map[string]interface{}, error) {
 	addresses := make([]string, len(out.Addrs))
 	for i, addr := range out.Addrs {
 		// for each [addr] in [Addrs] we attempt to format it given
-		// the [out.ctx] object
-		fAddr, err := formatAddress(out.ctx, addr)
+		// the [out.rt] object
+		fAddr, err := formatAddress(out.rt, addr)
 		if err != nil {
 			// we expect these addresses to be valid, return error
 			// if they are not
@@ -130,15 +130,15 @@ func (out *OutputOwners) Sort() {
 }
 
 // formatAddress formats a given [addr] into human readable format using
-// [ChainID] and [NetworkID] if a non-nil [ctx] is provided. If [ctx] is not
+// [ChainID] and [NetworkID] if a non-nil [rt] is provided. If [rt] is not
 // provided, the address will be returned in cb58 format.
-func formatAddress(ctx *runtime.Runtime, addr ids.ShortID) (string, error) {
-	if ctx == nil {
+func formatAddress(rt *runtime.Runtime, addr ids.ShortID) (string, error) {
+	if rt == nil {
 		return addr.String(), nil
 	}
 
 	// Use ChainID directly - consensus context doesn't have BCLookup
-	ctxValue := reflect.ValueOf(ctx).Elem()
+	ctxValue := reflect.ValueOf(rt).Elem()
 
 	if ctxValue.Kind() == reflect.Struct {
 		bcLookupField := ctxValue.FieldByName("BCLookup")

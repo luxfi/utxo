@@ -6,7 +6,7 @@ package secp256k1fx
 import (
 	"errors"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 )
 
 var ErrNoValueInput = errors.New("input has no value")
@@ -16,7 +16,7 @@ type TransferInput struct {
 	Input `serialize:"true"`
 }
 
-func (*TransferInput) InitCtx(*runtime.Runtime) {}
+func (*TransferInput) InitRuntime(*runtime.Runtime) {}
 
 // Amount returns the quantity of the asset this input produces
 func (in *TransferInput) Amount() uint64 {

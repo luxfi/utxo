@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 	"github.com/luxfi/vm/components/verify"
 )
 
@@ -30,9 +30,9 @@ func (out *TransferOutput) InitializeWithContext(ctx context.Context) error {
 	return nil
 }
 
-// InitCtx sets the context for address formatting
-func (out *TransferOutput) InitCtx(ctx *runtime.Runtime) {
-	out.OutputOwners.InitCtx(ctx)
+// InitRuntime sets the context for address formatting
+func (out *TransferOutput) InitRuntime(rt *runtime.Runtime) {
+	out.OutputOwners.InitRuntime(rt)
 }
 
 // MarshalJSON marshals Amt and the embedded OutputOwners struct

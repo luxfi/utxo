@@ -17,7 +17,7 @@ import (
 
 	reflect "reflect"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -74,16 +74,16 @@ func (mr *MockTransferableInMockRecorder) Cost() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cost", reflect.TypeOf((*MockTransferableIn)(nil).Cost))
 }
 
-// InitCtx mocks base method.
-func (m *MockTransferableIn) InitCtx(arg0 *runtime.Runtime) {
+// InitRuntime mocks base method.
+func (m *MockTransferableIn) InitRuntime(arg0 *runtime.Runtime) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "InitCtx", arg0)
+	m.ctrl.Call(m, "InitRuntime", arg0)
 }
 
-// InitCtx indicates an expected call of InitCtx.
-func (mr *MockTransferableInMockRecorder) InitCtx(arg0 any) *gomock.Call {
+// InitRuntime indicates an expected call of InitRuntime.
+func (mr *MockTransferableInMockRecorder) InitRuntime(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitCtx", reflect.TypeOf((*MockTransferableIn)(nil).InitCtx), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitRuntime", reflect.TypeOf((*MockTransferableIn)(nil).InitRuntime), arg0)
 }
 
 // Verify mocks base method.

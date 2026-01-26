@@ -4,7 +4,7 @@
 package propertyfx
 
 import (
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
 )
@@ -13,10 +13,10 @@ type BurnOperation struct {
 	secp256k1fx.Input `serialize:"true"`
 }
 
-func (*BurnOperation) InitCtx(*runtime.Runtime) {}
+func (*BurnOperation) InitRuntime(*runtime.Runtime) {}
 
 // InitializeContext implements the fxs.FxOperation interface
-func (*BurnOperation) InitializeContext(*runtime.Runtime) error {
+func (*BurnOperation) InitializeRuntime(*runtime.Runtime) error {
 	return nil
 }
 

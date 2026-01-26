@@ -6,7 +6,7 @@ package nftfx
 import (
 	"errors"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 
 	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
@@ -19,12 +19,12 @@ type TransferOperation struct {
 	Output TransferOutput    `serialize:"true" json:"output"`
 }
 
-func (op *TransferOperation) InitCtx(ctx *runtime.Runtime) {
-	op.Output.OutputOwners.InitCtx(ctx)
+func (op *TransferOperation) InitRuntime(rt *runtime.Runtime) {
+	op.Output.OutputOwners.InitRuntime(rt)
 }
 
-func (op *TransferOperation) InitializeContext(ctx *runtime.Runtime) error {
-	op.InitCtx(ctx)
+func (op *TransferOperation) InitializeRuntime(rt *runtime.Runtime) error {
+	op.InitRuntime(rt)
 	return nil
 }
 

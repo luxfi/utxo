@@ -6,7 +6,7 @@ package propertyfx
 import (
 	"errors"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 
 	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
@@ -20,14 +20,14 @@ type MintOperation struct {
 	OwnedOutput OwnedOutput       `serialize:"true" json:"ownedOutput"`
 }
 
-func (op *MintOperation) InitCtx(ctx *runtime.Runtime) {
-	op.MintOutput.OutputOwners.InitCtx(ctx)
-	op.OwnedOutput.OutputOwners.InitCtx(ctx)
+func (op *MintOperation) InitRuntime(rt *runtime.Runtime) {
+	op.MintOutput.OutputOwners.InitRuntime(rt)
+	op.OwnedOutput.OutputOwners.InitRuntime(rt)
 }
 
 // InitializeContext implements the fxs.FxOperation interface
-func (op *MintOperation) InitializeContext(ctx *runtime.Runtime) error {
-	op.InitCtx(ctx)
+func (op *MintOperation) InitializeRuntime(rt *runtime.Runtime) error {
+	op.InitRuntime(rt)
 	return nil
 }
 

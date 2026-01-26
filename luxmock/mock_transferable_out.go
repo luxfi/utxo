@@ -16,7 +16,7 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/luxfi/consensus/runtime"
+	"github.com/luxfi/runtime"
 	verify "github.com/luxfi/vm/components/verify"
 	gomock "go.uber.org/mock/gomock"
 )
@@ -60,16 +60,16 @@ func (mr *MockTransferableOutMockRecorder) Amount() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Amount", reflect.TypeOf((*MockTransferableOut)(nil).Amount))
 }
 
-// InitCtx mocks base method.
-func (m *MockTransferableOut) InitCtx(arg0 *runtime.Runtime) {
+// InitRuntime mocks base method.
+func (m *MockTransferableOut) InitRuntime(arg0 *runtime.Runtime) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "InitCtx", arg0)
+	m.ctrl.Call(m, "InitRuntime", arg0)
 }
 
-// InitCtx indicates an expected call of InitCtx.
-func (mr *MockTransferableOutMockRecorder) InitCtx(arg0 any) *gomock.Call {
+// InitRuntime indicates an expected call of InitRuntime.
+func (mr *MockTransferableOutMockRecorder) InitRuntime(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitCtx", reflect.TypeOf((*MockTransferableOut)(nil).InitCtx), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InitRuntime", reflect.TypeOf((*MockTransferableOut)(nil).InitRuntime), arg0)
 }
 
 // Verify mocks base method.
