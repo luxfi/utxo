@@ -9,9 +9,9 @@ import (
 	"sort"
 
 	"github.com/luxfi/codec"
-	"github.com/luxfi/runtime"
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
+	"github.com/luxfi/runtime"
 	"github.com/luxfi/vm/components/verify"
 )
 
@@ -24,8 +24,8 @@ var (
 	ErrNilTransferableFxInput = errors.New("nil transferable feature extension input is not valid")
 	ErrInputsNotSortedUnique  = errors.New("inputs not sorted and unique")
 
-	_ verify.Verifiable = (*TransferableOutput)(nil)
-	_ verify.Verifiable = (*TransferableInput)(nil)
+	_ verify.Verifiable                            = (*TransferableOutput)(nil)
+	_ verify.Verifiable                            = (*TransferableInput)(nil)
 	_ interface{ Compare(*TransferableInput) int } = (*TransferableInput)(nil)
 )
 
