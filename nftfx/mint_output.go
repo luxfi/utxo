@@ -6,8 +6,8 @@ package nftfx
 import (
 	"encoding/json"
 
-	"github.com/luxfi/vm/components/verify"
 	"github.com/luxfi/utxo/secp256k1fx"
+	"github.com/luxfi/vm/components/verify"
 )
 
 var _ verify.State = (*MintOutput)(nil)

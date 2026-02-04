@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/luxfi/codec/linearcodec"
+	"github.com/luxfi/crypto/cb58"
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
 	log "github.com/luxfi/log"
-	"github.com/luxfi/crypto/cb58"
 )
 
 var (

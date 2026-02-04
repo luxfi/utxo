@@ -6,9 +6,9 @@ package utxo
 import (
 	"errors"
 
+	"github.com/luxfi/codec/wrappers"
 	"github.com/luxfi/ids"
 	"github.com/luxfi/math"
-	"github.com/luxfi/codec/wrappers"
 )
 
 var ErrInsufficientFunds = errors.New("insufficient funds")
