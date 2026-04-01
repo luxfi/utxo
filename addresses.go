@@ -77,10 +77,17 @@ func (a *addressManager) ParseAddress(addrStr string) (ids.ID, ids.ShortID, erro
 		return ids.Empty, ids.ShortID{}, err
 	}
 
-	// Try to parse chainIDAlias as an ID directly since consensus context doesn't have BCLookup
-	chainID, err := ids.FromString(chainIDAlias)
-	if err != nil {
-		return ids.ID{}, ids.ShortID{}, fmt.Errorf("failed to parse chain ID %q: %w", chainIDAlias, err)
+	// Resolve chain alias via BCLookup (handles "X", "P", "C", etc.)
+	var chainID ids.ID
+	if a.rt.BCLookup != nil {
+		chainID, err = a.rt.BCLookup.Lookup(chainIDAlias)
+	}
+	if err != nil || chainID == ids.Empty {
+		// Fallback: try parsing as raw CB58 ID
+		chainID, err = ids.FromString(chainIDAlias)
+		if err != nil {
+			return ids.ID{}, ids.ShortID{}, fmt.Errorf("unknown chain %q: %w", chainIDAlias, err)
+		}
 	}
 
 	networkID := a.rt.NetworkID
