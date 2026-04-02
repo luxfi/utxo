@@ -79,11 +79,28 @@ func (a *addressManager) ParseAddress(addrStr string) (ids.ID, ids.ShortID, erro
 
 	// Resolve chain alias via BCLookup (handles "X", "P", "C", etc.)
 	var chainID ids.ID
-	if a.rt.BCLookup != nil {
-		chainID, err = a.rt.BCLookup.Lookup(chainIDAlias)
+	resolved := false
+	if a.rt != nil && a.rt.BCLookup != nil {
+		if id, lookupErr := a.rt.BCLookup.Lookup(chainIDAlias); lookupErr == nil {
+			chainID = id
+			resolved = true
+		}
 	}
-	if err != nil || chainID == ids.Empty {
-		// Fallback: try parsing as raw CB58 ID
+	// If BCLookup didn't resolve, check well-known aliases against Runtime
+	if !resolved && a.rt != nil {
+		switch chainIDAlias {
+		case "X":
+			chainID = a.rt.XChainID
+			resolved = chainID != ids.Empty
+		case "P":
+			// P-Chain is always the zero ID with special handling
+		case "C":
+			chainID = a.rt.CChainID
+			resolved = chainID != ids.Empty
+		}
+	}
+	if !resolved {
+		// Fallback: try parsing as raw CB58 ID (only for full-length IDs)
 		chainID, err = ids.FromString(chainIDAlias)
 		if err != nil {
 			return ids.ID{}, ids.ShortID{}, fmt.Errorf("unknown chain %q: %w", chainIDAlias, err)
