@@ -163,6 +163,15 @@ func (in *TransferableInput) Compare(other *TransferableInput) int {
 	return in.UTXOID.Compare(&other.UTXOID)
 }
 
+// InitRuntime forwards the runtime to the inner Fx input if it implements
+// the runtime-aware interface. No-op otherwise. Used by VMs that need to
+// hand a runtime context down to feature-extension input types.
+func (in *TransferableInput) InitRuntime(rt *runtime.Runtime) {
+	if contextInput, ok := in.In.(interface{ InitRuntime(*runtime.Runtime) }); ok {
+		contextInput.InitRuntime(rt)
+	}
+}
+
 type innerSortTransferableInputsWithSigners struct {
 	ins     []*TransferableInput
 	signers [][]*secp256k1.PrivateKey
