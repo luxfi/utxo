@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package secp256r1fx
 
 import (
 	"errors"
@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	// CostPerSignature is the compute cost per ML-DSA signature verification.
-	// Benchmarked at ~228us vs secp256k1 ~40us (5.7x ratio).
-	// secp256k1 CostPerSignature = 1000, so ML-DSA = 6000.
-	CostPerSignature uint64 = 6000
+	// CostPerSignature is the compute cost per P-256 ECDSA signature verification.
+	// Benchmarked at ~65us vs secp256k1 ~40us (1.6x ratio).
+	// secp256k1 CostPerSignature = 1000, so P-256 = 1500.
+	CostPerSignature uint64 = 1500
 )
 
 var (
