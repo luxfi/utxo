@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package ed25519fx
 
 import (
 	"testing"
@@ -45,7 +45,7 @@ func TestInputCost(t *testing.T) {
 	}
 	cost, err := in.Cost()
 	require.NoError(err)
-	require.Equal(uint64(12000), cost) // 2 sigs * 6000
+	require.Equal(uint64(2000), cost) // 2 * 1000
 }
 
 func TestTransferInputVerify(t *testing.T) {
