@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package slhdsafx
 
 import (
 	"encoding/json"
@@ -14,28 +14,23 @@ import (
 )
 
 var (
-	ErrNilOutputOwners     = errors.New("nil ML-DSA output owners")
-	ErrNilPublicKey        = errors.New("nil ML-DSA public key")
+	ErrNilOutputOwners     = errors.New("nil SLH-DSA output owners")
+	ErrNilPublicKey        = errors.New("nil SLH-DSA public key")
 	ErrThresholdExceeded   = errors.New("threshold exceeds number of addresses")
 	ErrOutputUnoptimized   = errors.New("output representation should be optimized")
 	ErrOutputNotSpendable  = errors.New("output not yet spendable")
-	ErrInvalidPubKeyLength = errors.New("invalid ML-DSA public key length")
+	ErrInvalidPubKeyLength = errors.New("invalid SLH-DSA public key length")
 )
 
-// OutputOwners describes who can spend an output locked with ML-DSA keys.
-// This is the post-quantum alternative to secp256k1fx.OutputOwners.
-//
-// Spending requires [Threshold] signatures from the [Addrs] public keys.
-// All addresses are ML-DSA public keys (1312, 1952, or 2592 bytes depending on level).
+// OutputOwners describes who can spend an output locked with SLH-DSA keys.
 type OutputOwners struct {
-	// Level indicates the ML-DSA parameter set for all addresses
+	// Level indicates the SLH-DSA parameter set for all addresses
 	Level SecurityLevel `serialize:"true" json:"securityLevel"`
 	// Locktime is the Unix timestamp after which this output can be spent
 	Locktime uint64 `serialize:"true" json:"locktime"`
 	// Threshold is the number of signatures required to spend
 	Threshold uint32 `serialize:"true" json:"threshold"`
-	// Addrs are the ML-DSA public keys that can sign to spend
-	// Must be sorted in lexicographic order
+	// Addrs are the SLH-DSA public keys that can sign to spend
 	Addrs [][]byte `serialize:"true" json:"addresses"`
 }
 
@@ -74,7 +69,7 @@ func (out *OutputOwners) Verify() error {
 	return nil
 }
 
-// Addresses returns short IDs derived from the ML-DSA public keys.
+// Addresses returns short IDs derived from the SLH-DSA public keys.
 // Public keys are hashed via SHA256+RIPEMD160 to produce 20-byte addresses.
 func (out *OutputOwners) Addresses() []ids.ShortID {
 	addrs := make([]ids.ShortID, len(out.Addrs))
@@ -124,18 +119,4 @@ func (out *OutputOwners) Equals(other *OutputOwners) bool {
 		}
 	}
 	return true
-}
-
-// NewOutputOwners creates a new ML-DSA output owners
-func NewOutputOwners(level SecurityLevel, locktime uint64, threshold uint32, addrs [][]byte) (*OutputOwners, error) {
-	out := &OutputOwners{
-		Level:     level,
-		Locktime:  locktime,
-		Threshold: threshold,
-		Addrs:     addrs,
-	}
-	if err := out.Verify(); err != nil {
-		return nil, err
-	}
-	return out, nil
 }

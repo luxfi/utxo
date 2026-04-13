@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package secp256r1fx
 
 import (
 	"errors"
@@ -10,17 +10,11 @@ import (
 
 	"github.com/luxfi/cache/lru"
 	"github.com/luxfi/crypto/hash"
-	"github.com/luxfi/crypto/mldsa"
 	"github.com/luxfi/ids"
 	"github.com/luxfi/vm/components/verify"
 )
 
 const verifyCacheSize = 256
-
-// utxoSignCtx is the domain-separation context for UTXO spending signatures.
-// FIPS 204 Section 5.2: prevents cross-protocol signature replay between
-// X-Chain UTXO spending and other ML-DSA uses (EVM precompile, Warp, MPC).
-var utxoSignCtx = []byte("lux-x-chain-utxo-v1")
 
 var (
 	ErrWrongVMType                    = errors.New("wrong vm type")
@@ -41,11 +35,9 @@ var (
 	ErrWrongSig                       = errors.New("wrong signature")
 )
 
-// verifyKey is the cache key for signature verification results.
-// Keyed on hash of (pubkey, msg, sig) to avoid storing large PQ byte slices.
 type verifyKey = ids.ID
 
-// Fx describes the ML-DSA feature extension for post-quantum secure UTXO spending
+// Fx describes the P-256 (secp256r1) feature extension for UTXO spending
 type Fx struct {
 	VM           VM
 	bootstrapped bool
@@ -61,7 +53,7 @@ func (fx *Fx) Initialize(vmIntf interface{}) error {
 
 	log := fx.VM.Logger()
 	if !log.IsZero() {
-		log.Debug("initializing mldsafx")
+		log.Debug("initializing secp256r1fx")
 	}
 
 	if fx.VM == nil {
@@ -199,8 +191,9 @@ func (fx *Fx) VerifySpend(utx UnsignedTx, in *TransferInput, cred *Credential, u
 }
 
 // VerifyCredentials ensures that the output can be spent by the input with the
-// credential. ML-DSA-65 signatures are verified directly against the public key
-// stored in OutputOwners.Addrs.
+// credential. P-256 ECDSA signatures are verified against the public key
+// provided in the credential. The pubkey is validated against the address
+// stored in OutputOwners.Addrs via hash.PubkeyBytesToAddress.
 func (fx *Fx) VerifyCredentials(utx UnsignedTx, in *Input, cred *Credential, out *OutputOwners) error {
 	numSigs := len(in.SigIndices)
 	switch {
@@ -212,51 +205,57 @@ func (fx *Fx) VerifyCredentials(utx UnsignedTx, in *Input, cred *Credential, out
 		return ErrTooFewSigners
 	case numSigs != len(cred.Sigs):
 		return ErrInputCredentialSignersMismatch
-	case !fx.bootstrapped: // disable signature verification during bootstrapping
+	case !fx.bootstrapped:
 		return nil
 	}
 
-	txBytes := utx.Bytes()
-	txHash := hash.ComputeHash256(txBytes)
+	txHash := hash.ComputeHash256(utx.Bytes())
 	for i, index := range in.SigIndices {
 		if index >= uint32(len(out.Addrs)) {
 			return ErrInputOutputIndexOutOfBounds
 		}
 
 		sig := cred.Sigs[i]
-		pkBytes := out.Addrs[index]
 
-		// Check verification cache: key = hash(pkHash || txHash || sigHash)
-		cacheKey := verifyCacheKey(pkBytes, txHash, sig)
+		if i >= len(cred.PubKeys) {
+			return fmt.Errorf("%w: missing public key for signature %d", ErrWrongSig, i)
+		}
+		pk := cred.PubKeys[i]
+		if len(pk) != PubKeyLen {
+			return fmt.Errorf("%w: public key %d has wrong length %d", ErrWrongSig, i, len(pk))
+		}
+
+		// Verify the pubkey maps to the expected address
+		addressBytes := hash.PubkeyBytesToAddress(pk)
+		expectedAddr, err := ids.ToShortID(addressBytes)
+		if err != nil {
+			return fmt.Errorf("%w: invalid address derivation: %v", ErrWrongSig, err)
+		}
+		if expectedAddr != out.Addrs[index] {
+			return fmt.Errorf("%w: public key does not match address at index %d", ErrWrongSig, index)
+		}
+
+		cacheKey := verifyCacheKey(pk, txHash, sig[:])
 		if valid, ok := fx.verifyCache.Get(cacheKey); ok {
 			if !valid {
-				addressBytes := hash.PubkeyBytesToAddress(pkBytes)
-				return fmt.Errorf("%w: ML-DSA verification failed for address %x (cached)",
-					ErrWrongSig, addressBytes)
+				return fmt.Errorf("%w: P-256 verification failed for address %s (cached)",
+					ErrWrongSig, out.Addrs[index])
 			}
 			continue
 		}
 
-		pk, err := mldsa.PublicKeyFromBytes(pkBytes, mldsaMode(out.Level))
-		if err != nil {
-			return fmt.Errorf("%w: invalid public key at index %d: %v", ErrWrongSig, index, err)
-		}
-
-		valid := pk.VerifySignatureCtx(txBytes, sig, utxoSignCtx)
+		valid := verifyP256(txHash, sig, pk)
 		fx.verifyCache.Put(cacheKey, valid)
 		if !valid {
-			addressBytes := hash.PubkeyBytesToAddress(pkBytes)
-			return fmt.Errorf("%w: ML-DSA verification failed for address %x",
-				ErrWrongSig, addressBytes)
+			return fmt.Errorf("%w: P-256 verification failed for address %s",
+				ErrWrongSig, out.Addrs[index])
 		}
 	}
 
 	return nil
 }
 
-// verifyCacheKey builds a deterministic cache key from the triple (pk, txHash, sig).
 func verifyCacheKey(pk, txHash, sig []byte) verifyKey {
-	// Hash the concatenation of the three hashes to produce a single 32-byte ID.
 	pkHash := hash.ComputeHash256(pk)
 	sigHash := hash.ComputeHash256(sig)
 	combined := make([]byte, 0, len(pkHash)+len(txHash)+len(sigHash))
@@ -283,18 +282,4 @@ func (*Fx) CreateOutput(amount uint64, ownerIntf interface{}) (interface{}, erro
 		Amt:          amount,
 		OutputOwners: *owner,
 	}, nil
-}
-
-// mldsaMode converts SecurityLevel to mldsa.Mode
-func mldsaMode(level SecurityLevel) mldsa.Mode {
-	switch level {
-	case SecLevelMLDSA44:
-		return mldsa.MLDSA44
-	case SecLevelMLDSA65:
-		return mldsa.MLDSA65
-	case SecLevelMLDSA87:
-		return mldsa.MLDSA87
-	default:
-		return mldsa.MLDSA65
-	}
 }

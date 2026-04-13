@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package schnorrfx
 
 import (
 	"errors"
@@ -11,10 +11,11 @@ import (
 )
 
 const (
-	// CostPerSignature is the compute cost per ML-DSA signature verification.
-	// Benchmarked at ~228us vs secp256k1 ~40us (5.7x ratio).
-	// secp256k1 CostPerSignature = 1000, so ML-DSA = 6000.
-	CostPerSignature uint64 = 6000
+	// CostPerSignature is the compute cost per BIP-340 Schnorr verification.
+	// BIP-340 verify is comparable to secp256k1 ECDSA verify, but slightly
+	// faster because there's no recovery. Set to 1000 (same as Ed25519, same
+	// order as secp256k1).
+	CostPerSignature uint64 = 1000
 )
 
 var (
