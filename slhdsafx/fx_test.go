@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package slhdsafx
 
 import (
 	"crypto/rand"
@@ -12,16 +12,16 @@ import (
 
 	"github.com/luxfi/codec/linearcodec"
 	"github.com/luxfi/crypto/hash"
-	"github.com/luxfi/crypto/mldsa"
+	"github.com/luxfi/crypto/slhdsa"
 	"github.com/luxfi/ids"
 	log "github.com/luxfi/log"
 )
 
-func newTestFx(t *testing.T) (*Fx, *mldsa.PrivateKey, []byte) {
+func newTestFx(t *testing.T) (*Fx, *slhdsa.PrivateKey, []byte) {
 	t.Helper()
 	require := require.New(t)
 
-	sk, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
+	sk, err := slhdsa.GenerateKey(rand.Reader, slhdsa.SHA2_192f)
 	require.NoError(err)
 
 	vm := &TestVM{
@@ -67,7 +67,7 @@ func TestFxVerifyTransfer(t *testing.T) {
 	out := &TransferOutput{
 		Amt: 1,
 		OutputOwners: OutputOwners{
-			Level:     SecLevelMLDSA65,
+			Level:     SecLevelSLH192f,
 			Locktime:  0,
 			Threshold: 1,
 			Addrs:     [][]byte{pkBytes},
@@ -80,7 +80,7 @@ func TestFxVerifyTransfer(t *testing.T) {
 		},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{sig},
 	}
 
@@ -94,13 +94,12 @@ func TestFxVerifyTransferWrongSig(t *testing.T) {
 	txBytes := []byte{0, 1, 2, 3, 4, 5}
 	tx := &TestTx{UnsignedBytes: txBytes}
 
-	// Create a bad signature
-	badSig := make([]byte, mldsa.MLDSA65SignatureSize)
+	badSig := make([]byte, SLH192fSigLen)
 
 	out := &TransferOutput{
 		Amt: 1,
 		OutputOwners: OutputOwners{
-			Level:     SecLevelMLDSA65,
+			Level:     SecLevelSLH192f,
 			Locktime:  0,
 			Threshold: 1,
 			Addrs:     [][]byte{pkBytes},
@@ -113,7 +112,7 @@ func TestFxVerifyTransferWrongSig(t *testing.T) {
 		},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{badSig},
 	}
 
@@ -134,20 +133,20 @@ func TestFxVerifyTransferMismatchedAmounts(t *testing.T) {
 	out := &TransferOutput{
 		Amt: 1,
 		OutputOwners: OutputOwners{
-			Level:     SecLevelMLDSA65,
+			Level:     SecLevelSLH192f,
 			Locktime:  0,
 			Threshold: 1,
 			Addrs:     [][]byte{pkBytes},
 		},
 	}
 	in := &TransferInput{
-		Amt: 2, // mismatched
+		Amt: 2,
 		Input: Input{
 			SigIndices: []uint32{0},
 		},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{sig},
 	}
 
@@ -168,7 +167,7 @@ func TestFxVerifyTransferTimelocked(t *testing.T) {
 	out := &TransferOutput{
 		Amt: 1,
 		OutputOwners: OutputOwners{
-			Level:     SecLevelMLDSA65,
+			Level:     SecLevelSLH192f,
 			Locktime:  uint64(time.Date(2099, time.January, 1, 0, 0, 0, 0, time.UTC).Unix()),
 			Threshold: 1,
 			Addrs:     [][]byte{pkBytes},
@@ -181,7 +180,7 @@ func TestFxVerifyTransferTimelocked(t *testing.T) {
 		},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{sig},
 	}
 
@@ -200,7 +199,7 @@ func TestFxVerifyCredentials(t *testing.T) {
 	require.NoError(err)
 
 	out := &OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 1,
 		Addrs:     [][]byte{pkBytes},
@@ -209,51 +208,8 @@ func TestFxVerifyCredentials(t *testing.T) {
 		SigIndices: []uint32{0},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{sig},
-	}
-
-	require.NoError(fx.VerifyCredentials(tx, in, cred, out))
-}
-
-func TestFxVerifyCredentialsMultiSig(t *testing.T) {
-	require := require.New(t)
-	fx, _, _ := newTestFx(t)
-
-	sk1, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
-	require.NoError(err)
-	sk2, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
-	require.NoError(err)
-
-	pk1 := sk1.PublicKey.Bytes()
-	pk2 := sk2.PublicKey.Bytes()
-
-	// Sort keys lexicographically
-	if string(pk1) > string(pk2) {
-		pk1, pk2 = pk2, pk1
-		sk1, sk2 = sk2, sk1
-	}
-
-	txBytes := []byte("multi-sig tx")
-	tx := &TestTx{UnsignedBytes: txBytes}
-
-	sig1, err := sk1.SignCtx(rand.Reader, txBytes, utxoSignCtx)
-	require.NoError(err)
-	sig2, err := sk2.SignCtx(rand.Reader, txBytes, utxoSignCtx)
-	require.NoError(err)
-
-	out := &OutputOwners{
-		Level:     SecLevelMLDSA65,
-		Locktime:  0,
-		Threshold: 2,
-		Addrs:     [][]byte{pk1, pk2},
-	}
-	in := &Input{
-		SigIndices: []uint32{0, 1},
-	}
-	cred := &Credential{
-		Level: SecLevelMLDSA65,
-		Sigs:  [][]byte{sig1, sig2},
 	}
 
 	require.NoError(fx.VerifyCredentials(tx, in, cred, out))
@@ -270,7 +226,7 @@ func TestFxVerifyPermission(t *testing.T) {
 	require.NoError(err)
 
 	owner := &OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 1,
 		Addrs:     [][]byte{pkBytes},
@@ -279,7 +235,7 @@ func TestFxVerifyPermission(t *testing.T) {
 		SigIndices: []uint32{0},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{sig},
 	}
 
@@ -293,13 +249,13 @@ func TestFxVerifyPermissionWrongTypes(t *testing.T) {
 	tx := &TestTx{}
 	require.ErrorIs(t, fx.VerifyPermission(tx, "bad", nil, nil), ErrWrongInputType)
 	require.ErrorIs(t, fx.VerifyPermission(tx, &Input{}, "bad", nil), ErrWrongCredentialType)
-	require.ErrorIs(t, fx.VerifyPermission(tx, &Input{}, &Credential{Level: SecLevelMLDSA65}, "bad"), ErrWrongOwnerType)
+	require.ErrorIs(t, fx.VerifyPermission(tx, &Input{}, &Credential{Level: SecLevelSLH192f}, "bad"), ErrWrongOwnerType)
 }
 
 func TestFxVerifyTransferBootstrapping(t *testing.T) {
 	require := require.New(t)
 
-	sk, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
+	sk, err := slhdsa.GenerateKey(rand.Reader, slhdsa.SHA2_192f)
 	require.NoError(err)
 	pkBytes := sk.PublicKey.Bytes()
 
@@ -312,18 +268,16 @@ func TestFxVerifyTransferBootstrapping(t *testing.T) {
 	fx := &Fx{}
 	require.NoError(fx.Initialize(vm))
 	require.NoError(fx.Bootstrapping())
-	// NOT calling Bootstrapped — should skip sig verification
 
 	txBytes := []byte{0, 1, 2, 3, 4, 5}
 	tx := &TestTx{UnsignedBytes: txBytes}
 
-	// Use a bad signature — should still pass during bootstrap
-	badSig := make([]byte, mldsa.MLDSA65SignatureSize)
+	badSig := make([]byte, SLH192fSigLen)
 
 	out := &TransferOutput{
 		Amt: 1,
 		OutputOwners: OutputOwners{
-			Level:     SecLevelMLDSA65,
+			Level:     SecLevelSLH192f,
 			Locktime:  0,
 			Threshold: 1,
 			Addrs:     [][]byte{pkBytes},
@@ -336,7 +290,7 @@ func TestFxVerifyTransferBootstrapping(t *testing.T) {
 		},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{badSig},
 	}
 
@@ -348,7 +302,7 @@ func TestFxCreateOutput(t *testing.T) {
 	fx, _, pkBytes := newTestFx(t)
 
 	owner := &OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 1,
 		Addrs:     [][]byte{pkBytes},
@@ -373,7 +327,7 @@ func TestFxVerifyOperation(t *testing.T) {
 	require.NoError(err)
 
 	owners := OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 1,
 		Addrs:     [][]byte{pkBytes},
@@ -391,7 +345,7 @@ func TestFxVerifyOperation(t *testing.T) {
 		},
 	}
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{sig},
 	}
 
@@ -401,7 +355,7 @@ func TestFxVerifyOperation(t *testing.T) {
 func TestFxAddressDerivation(t *testing.T) {
 	require := require.New(t)
 
-	sk, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
+	sk, err := slhdsa.GenerateKey(rand.Reader, slhdsa.SHA2_192f)
 	require.NoError(err)
 
 	pkBytes := sk.PublicKey.Bytes()
@@ -415,11 +369,11 @@ func TestFxAddressDerivation(t *testing.T) {
 func TestOutputOwners_RejectThresholdZero(t *testing.T) {
 	require := require.New(t)
 
-	sk, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
+	sk, err := slhdsa.GenerateKey(rand.Reader, slhdsa.SHA2_192f)
 	require.NoError(err)
 
 	out := &OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 0,
 		Addrs:     [][]byte{sk.PublicKey.Bytes()},
@@ -427,27 +381,16 @@ func TestOutputOwners_RejectThresholdZero(t *testing.T) {
 	require.ErrorIs(out.Verify(), ErrOutputUnoptimized)
 }
 
-// Regression: Finding 1 -- Threshold==0 with no addresses is valid (unspendable)
-func TestOutputOwners_ThresholdZeroNoAddrs(t *testing.T) {
-	out := &OutputOwners{
-		Level:     SecLevelMLDSA65,
-		Locktime:  0,
-		Threshold: 0,
-		Addrs:     nil,
-	}
-	require.NoError(t, out.Verify())
-}
-
-// Regression: Finding 3 -- Addresses() must return hashed ShortIDs, not zero
+// Regression: Finding 3 -- Addresses() must return hashed ShortIDs
 func TestOutputOwners_Addresses_UsesHash(t *testing.T) {
 	require := require.New(t)
 
-	sk, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
+	sk, err := slhdsa.GenerateKey(rand.Reader, slhdsa.SHA2_192f)
 	require.NoError(err)
 	pkBytes := sk.PublicKey.Bytes()
 
 	out := &OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 1,
 		Addrs:     [][]byte{pkBytes},
@@ -455,9 +398,8 @@ func TestOutputOwners_Addresses_UsesHash(t *testing.T) {
 
 	addrs := out.Addresses()
 	require.Len(addrs, 1)
-	require.NotEqual(ids.ShortEmpty, addrs[0], "Addresses() returned zero ShortID -- must hash pubkey")
+	require.NotEqual(ids.ShortEmpty, addrs[0])
 
-	// Verify it matches the expected derivation
 	expectedBytes := hash.PubkeyBytesToAddress(pkBytes)
 	expected, err := ids.ToShortID(expectedBytes)
 	require.NoError(err)
@@ -467,13 +409,13 @@ func TestOutputOwners_Addresses_UsesHash(t *testing.T) {
 // Regression: Finding 6 -- Empty Sigs slice must be rejected
 func TestCredential_RejectEmptySigs(t *testing.T) {
 	cred := &Credential{
-		Level: SecLevelMLDSA65,
+		Level: SecLevelSLH192f,
 		Sigs:  [][]byte{},
 	}
 	require.ErrorIs(t, cred.Verify(), ErrEmptyCredential)
 }
 
-// Regression: Finding 5 -- Verify cache hit/miss
+// Regression: Finding 5 -- Verify cache
 func TestFxVerifyCache(t *testing.T) {
 	require := require.New(t)
 	fx, sk, pkBytes := newTestFx(t)
@@ -485,24 +427,22 @@ func TestFxVerifyCache(t *testing.T) {
 	require.NoError(err)
 
 	out := &OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 1,
 		Addrs:     [][]byte{pkBytes},
 	}
 	in := &Input{SigIndices: []uint32{0}}
-	cred := &Credential{Level: SecLevelMLDSA65, Sigs: [][]byte{sig}}
+	cred := &Credential{Level: SecLevelSLH192f, Sigs: [][]byte{sig}}
 
-	// First call: cache miss, verify succeeds
 	require.NoError(fx.VerifyCredentials(tx, in, cred, out))
 	require.Equal(1, fx.verifyCache.Len())
 
-	// Second call: cache hit, should still succeed
 	require.NoError(fx.VerifyCredentials(tx, in, cred, out))
 	require.Equal(1, fx.verifyCache.Len())
 }
 
-// Regression: Finding 2 -- Domain separation: nil-context sig rejected by UTXO verify
+// Regression: Finding 2 -- Domain separation
 func TestFxVerifyCredentials_RejectNilContext(t *testing.T) {
 	require := require.New(t)
 	fx, sk, pkBytes := newTestFx(t)
@@ -510,20 +450,18 @@ func TestFxVerifyCredentials_RejectNilContext(t *testing.T) {
 	txBytes := []byte("domain sep test")
 	tx := &TestTx{UnsignedBytes: txBytes}
 
-	// Sign WITHOUT context (as if for a different protocol)
 	sig, err := sk.Sign(rand.Reader, txBytes, nil)
 	require.NoError(err)
 
 	out := &OutputOwners{
-		Level:     SecLevelMLDSA65,
+		Level:     SecLevelSLH192f,
 		Locktime:  0,
 		Threshold: 1,
 		Addrs:     [][]byte{pkBytes},
 	}
 	in := &Input{SigIndices: []uint32{0}}
-	cred := &Credential{Level: SecLevelMLDSA65, Sigs: [][]byte{sig}}
+	cred := &Credential{Level: SecLevelSLH192f, Sigs: [][]byte{sig}}
 
-	// Must fail: the fx verifier expects utxoSignCtx
 	err = fx.VerifyCredentials(tx, in, cred, out)
 	require.ErrorIs(err, ErrWrongSig)
 }

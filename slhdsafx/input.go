@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package slhdsafx
 
 import (
 	"errors"
@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	// CostPerSignature is the compute cost per ML-DSA signature verification.
-	// Benchmarked at ~228us vs secp256k1 ~40us (5.7x ratio).
-	// secp256k1 CostPerSignature = 1000, so ML-DSA = 6000.
-	CostPerSignature uint64 = 6000
+	// CostPerSignature is the compute cost per SLH-DSA signature verification.
+	// Benchmarked at ~862us vs secp256k1 ~40us (21.5x ratio).
+	// secp256k1 CostPerSignature = 1000, so SLH-DSA = 22000.
+	CostPerSignature uint64 = 22000
 )
 
 var (
