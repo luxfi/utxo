@@ -99,6 +99,24 @@ func (out *OutputOwners) MarshalJSON() ([]byte, error) {
 	})
 }
 
+// Equals returns true if the provided owners create the same condition
+func (out *OutputOwners) Equals(other *OutputOwners) bool {
+	if out == other {
+		return true
+	}
+	if out == nil || other == nil || out.Level != other.Level ||
+		out.Locktime != other.Locktime || out.Threshold != other.Threshold ||
+		len(out.Addrs) != len(other.Addrs) {
+		return false
+	}
+	for i, addr := range out.Addrs {
+		if string(addr) != string(other.Addrs[i]) {
+			return false
+		}
+	}
+	return true
+}
+
 // NewOutputOwners creates a new ML-DSA output owners
 func NewOutputOwners(level SecurityLevel, locktime uint64, threshold uint32, addrs [][]byte) (*OutputOwners, error) {
 	out := &OutputOwners{
