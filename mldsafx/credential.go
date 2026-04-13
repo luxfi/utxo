@@ -23,7 +23,6 @@ import (
 	"fmt"
 
 	"github.com/luxfi/formatting"
-	"github.com/luxfi/ids"
 )
 
 // Security level constants
@@ -41,11 +40,9 @@ const (
 	MLDSA87SigLen    = 4627
 )
 
-// ID is the unique identifier for this Fx
-var ID = ids.ID{'m', 'l', 'd', 's', 'a', 'f', 'x'}
-
 var (
 	ErrNilCredential      = errors.New("nil ML-DSA credential")
+	ErrEmptyCredential    = errors.New("empty ML-DSA credential")
 	ErrInvalidSignature   = errors.New("invalid ML-DSA signature")
 	ErrInvalidSecLevel    = errors.New("invalid ML-DSA security level")
 	ErrSignatureTooShort  = errors.New("ML-DSA signature too short")
@@ -127,6 +124,9 @@ type Credential struct {
 func (cr *Credential) Verify() error {
 	if cr == nil {
 		return ErrNilCredential
+	}
+	if len(cr.Sigs) == 0 {
+		return ErrEmptyCredential
 	}
 
 	expectedLen := cr.Level.SignatureLen()
