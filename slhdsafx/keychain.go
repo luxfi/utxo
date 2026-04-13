@@ -1,7 +1,7 @@
 // Copyright (C) 2019-2025, Lux Industries, Inc. All rights reserved.
 // See the file LICENSE for licensing terms.
 
-package mldsafx
+package slhdsafx
 
 import (
 	"crypto/rand"
@@ -9,7 +9,7 @@ import (
 	"fmt"
 
 	"github.com/luxfi/crypto/hash"
-	"github.com/luxfi/crypto/mldsa"
+	"github.com/luxfi/crypto/slhdsa"
 	"github.com/luxfi/ids"
 	"github.com/luxfi/keychain"
 	"github.com/luxfi/math/set"
@@ -19,41 +19,40 @@ import (
 var (
 	errCantSpend = errors.New("unable to spend this UTXO")
 
-	_ keychain.Signer   = (*mldsaSigner)(nil)
+	_ keychain.Signer   = (*slhdsaSigner)(nil)
 	_ keychain.Keychain = (*Keychain)(nil)
 )
 
-// mldsaSigner wraps an ML-DSA private key to implement keychain.Signer
-type mldsaSigner struct {
-	key *mldsa.PrivateKey
+// slhdsaSigner wraps an SLH-DSA private key to implement keychain.Signer
+type slhdsaSigner struct {
+	key *slhdsa.PrivateKey
 }
 
-func (s *mldsaSigner) SignHash(h []byte) ([]byte, error) {
-	// ML-DSA signs messages directly, not hashes. Use the hash as the message.
+func (s *slhdsaSigner) SignHash(h []byte) ([]byte, error) {
 	return s.key.SignCtx(rand.Reader, h, utxoSignCtx)
 }
 
-func (s *mldsaSigner) Sign(msg []byte) ([]byte, error) {
+func (s *slhdsaSigner) Sign(msg []byte) ([]byte, error) {
 	return s.key.SignCtx(rand.Reader, msg, utxoSignCtx)
 }
 
-func (s *mldsaSigner) Address() ids.ShortID {
+func (s *slhdsaSigner) Address() ids.ShortID {
 	pkBytes := s.key.PublicKey.Bytes()
 	addressBytes := hash.PubkeyBytesToAddress(pkBytes)
 	addr, _ := ids.ToShortID(addressBytes)
 	return addr
 }
 
-// Keychain is a collection of ML-DSA keys that can be used to spend outputs
+// Keychain is a collection of SLH-DSA keys that can be used to spend outputs
 type Keychain struct {
 	addrToKeyIndex map[ids.ShortID]int
 
 	Addrs set.Set[ids.ShortID]
-	Keys  []*mldsa.PrivateKey
+	Keys  []*slhdsa.PrivateKey
 }
 
 // NewKeychain returns a new keychain containing [keys]
-func NewKeychain(keys ...*mldsa.PrivateKey) *Keychain {
+func NewKeychain(keys ...*slhdsa.PrivateKey) *Keychain {
 	kc := &Keychain{
 		addrToKeyIndex: make(map[ids.ShortID]int),
 		Addrs:          make(set.Set[ids.ShortID]),
@@ -65,7 +64,7 @@ func NewKeychain(keys ...*mldsa.PrivateKey) *Keychain {
 }
 
 // Add a new key to the key chain
-func (kc *Keychain) Add(key *mldsa.PrivateKey) {
+func (kc *Keychain) Add(key *slhdsa.PrivateKey) {
 	pkBytes := key.PublicKey.Bytes()
 	addressBytes := hash.PubkeyBytesToAddress(pkBytes)
 	addr, err := ids.ToShortID(addressBytes)
@@ -83,7 +82,7 @@ func (kc *Keychain) Add(key *mldsa.PrivateKey) {
 // Get a key from the keychain. Returns keychain.Signer.
 func (kc Keychain) Get(id ids.ShortID) (keychain.Signer, bool) {
 	if i, ok := kc.addrToKeyIndex[id]; ok {
-		return &mldsaSigner{key: kc.Keys[i]}, true
+		return &slhdsaSigner{key: kc.Keys[i]}, true
 	}
 	return nil, false
 }
@@ -93,9 +92,9 @@ func (kc Keychain) Addresses() set.Set[ids.ShortID] {
 	return kc.Addrs
 }
 
-// New generates a new ML-DSA-65 key pair and adds it to the keychain
-func (kc *Keychain) New() (*mldsa.PrivateKey, error) {
-	sk, err := mldsa.GenerateKey(rand.Reader, mldsa.MLDSA65)
+// New generates a new SLH-DSA-SHA2-192f key pair and adds it to the keychain
+func (kc *Keychain) New() (*slhdsa.PrivateKey, error) {
+	sk, err := slhdsa.GenerateKey(rand.Reader, slhdsa.SHA2_192f)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +103,7 @@ func (kc *Keychain) New() (*mldsa.PrivateKey, error) {
 }
 
 // Spend attempts to create an input for the given output
-func (kc *Keychain) Spend(out verify.Verifiable, time uint64) (verify.Verifiable, []*mldsa.PrivateKey, error) {
+func (kc *Keychain) Spend(out verify.Verifiable, time uint64) (verify.Verifiable, []*slhdsa.PrivateKey, error) {
 	switch out := out.(type) {
 	case *MintOutput:
 		if sigIndices, keys, able := kc.Match(&out.OutputOwners, time); able {
@@ -128,14 +127,13 @@ func (kc *Keychain) Spend(out verify.Verifiable, time uint64) (verify.Verifiable
 }
 
 // Match attempts to match a list of addresses up to the provided threshold
-func (kc *Keychain) Match(owners *OutputOwners, time uint64) ([]uint32, []*mldsa.PrivateKey, bool) {
+func (kc *Keychain) Match(owners *OutputOwners, time uint64) ([]uint32, []*slhdsa.PrivateKey, bool) {
 	if time < owners.Locktime {
 		return nil, nil, false
 	}
 	sigs := make([]uint32, 0, owners.Threshold)
-	keys := make([]*mldsa.PrivateKey, 0, owners.Threshold)
+	keys := make([]*slhdsa.PrivateKey, 0, owners.Threshold)
 	for i := uint32(0); i < uint32(len(owners.Addrs)) && uint32(len(keys)) < owners.Threshold; i++ {
-		// Derive address from stored public key
 		addressBytes := hash.PubkeyBytesToAddress(owners.Addrs[i])
 		addr, err := ids.ToShortID(addressBytes)
 		if err != nil {
@@ -147,12 +145,4 @@ func (kc *Keychain) Match(owners *OutputOwners, time uint64) ([]uint32, []*mldsa
 		}
 	}
 	return sigs, keys, uint32(len(keys)) == owners.Threshold
-}
-
-// get returns the raw private key for the given address
-func (kc Keychain) get(id ids.ShortID) (*mldsa.PrivateKey, bool) {
-	if i, ok := kc.addrToKeyIndex[id]; ok {
-		return kc.Keys[i], true
-	}
-	return nil, false
 }
