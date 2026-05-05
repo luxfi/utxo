@@ -15,7 +15,7 @@ require (
 	github.com/luxfi/ids v1.2.9
 	github.com/luxfi/keychain v1.0.1
 	github.com/luxfi/log v1.4.1
-	github.com/luxfi/math v1.2.3
+	github.com/luxfi/math v1.4.0
 	github.com/luxfi/metric v1.4.11
 	github.com/luxfi/runtime v1.0.1
 	github.com/luxfi/timer v1.0.1
@@ -53,10 +53,10 @@ require (
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/supranational/blst v0.3.16 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
-	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	gonum.org/v1/gonum v0.16.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/exp v0.0.0-20260312153236-7ab1446f8b90 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	gonum.org/v1/gonum v0.17.0 // indirect
 	google.golang.org/protobuf v1.36.11 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
