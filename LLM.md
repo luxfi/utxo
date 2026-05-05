@@ -25,11 +25,11 @@ X-Chain supports multiple signature schemes simultaneously. This lets anyone fro
 | `schnorrfx` | BIP-340 Schnorr | Bitcoin Taproot | TODO |
 | `cggmp21fx` | CGGMP21 threshold ECDSA | Verify classical threshold sigs (MPC custody) | TODO |
 | `frostfx` | FROST threshold Schnorr | Verify Bitcoin Taproot threshold sigs | TODO |
-| `coronafx` | Corona threshold (PQ) | Verify PQ threshold sigs from T-Chain MPC | TODO |
+| `coronafx` | Corona threshold (PQ) | Verify PQ threshold sigs from M-Chain (LP-134) | TODO |
 | `ringfx` | LSAG ring signatures | Sender anonymity (Monero-style) | TODO |
 | `kemfx` | ML-KEM-768 | Stealth addresses, encrypted memos | TODO |
 
-**Threshold signing architecture:** X-Chain Fx plugins VERIFY threshold signatures. The actual threshold signing ceremonies happen on T-Chain (MPC runtime). So `cggmp21fx`/`frostfx`/`coronafx` are verifier plugins that accept the final aggregated sig — the keygen + signing rounds live on T-Chain.
+**Threshold signing architecture:** X-Chain Fx plugins VERIFY threshold signatures. The actual threshold signing ceremonies happen on M-Chain — the MPC runtime carved out of the legacy T-Chain monolith per LP-134 (Lux Chain Topology). So `cggmp21fx`/`frostfx`/`coronafx` are verifier plugins that accept the final aggregated sig — the keygen + signing rounds run as ceremonies on M-Chain via `chains/thresholdvm` in MPC mode. The legacy "T-Chain" name now refers only to `teleportvm` (LP-6332), which is unrelated.
 
 **Not implementing:** `thresholdmldsafx` (threshold ML-DSA). No FIPS standard exists yet. Use `coronafx` for PQ threshold signing — Corona is the real standardized PQ threshold primitive.
 
