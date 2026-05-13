@@ -1,6 +1,6 @@
 module github.com/luxfi/utxo
 
-go 1.26.1
+go 1.26.3
 
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.1.3
