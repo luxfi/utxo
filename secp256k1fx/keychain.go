@@ -58,47 +58,34 @@ func (s *luxSigner) AddressBytes() []byte {
 
 // Keychain is a collection of keys that can be used to spend outputs.
 //
-// The keychain holds TWO orthogonal address spaces for each key:
+// Each key has two address forms (the two data models in a multi-chain
+// keychain):
 //
 //   - Addrs: UTXO-native X-Chain / P-Chain addresses (SHA256+RIPEMD160 →
-//     ids.ShortID). This is the address space of UTXO chains.
+//     ids.ShortID). Consumed by UTXO-model chains.
 //
-//   - EVMAddrs: 20-byte account addresses used by EVM-runtime chains
+//   - EVMAddrs: 20-byte account addresses consumed by EVM-runtime chains
 //     (Lux C-Chain, Partner EVM, Hanzo EVM, Polygon, BSC, etc.). The
-//     internal derivation uses Keccak256, but the name reflects the
-//     data model that consumes the value (EVM account address), not
-//     the hash primitive that derives it. UTXO vs EVM is the relevant
-//     contrast in a multi-chain keychain — Keccak is just a hash.
-//
-// KeccakAddrs and EthAddrs are deprecated aliases of EVMAddrs that
-// share the SAME underlying map so adds via any field are visible
-// from all three. set.Set is a map type (reference semantics).
+//     internal derivation uses Keccak256, but the name reflects what
+//     the value IS (EVM-runtime account address), not how it's hashed.
 type Keychain struct {
-	luxAddrToKeyIndex map[ids.ShortID]int
-	evmAddrToKeyIndex map[gethcommon.Address]int
+	utxoAddrToKeyIndex map[ids.ShortID]int
+	evmAddrToKeyIndex  map[gethcommon.Address]int
 
-	// These can be used to iterate over. However, they should not be modified
-	// externally. KeccakAddrs and EthAddrs share the same underlying
-	// map as EVMAddrs — see type docstring.
-	Addrs       set.Set[ids.ShortID]
-	EVMAddrs    set.Set[gethcommon.Address]
-	KeccakAddrs set.Set[gethcommon.Address] // Deprecated: same map as EVMAddrs
-	EthAddrs    set.Set[gethcommon.Address] // Deprecated: same map as EVMAddrs
-	Keys        []*secp256k1.PrivateKey
+	// These can be used to iterate over. However, they should not be
+	// modified externally.
+	Addrs    set.Set[ids.ShortID]
+	EVMAddrs set.Set[gethcommon.Address]
+	Keys     []*secp256k1.PrivateKey
 }
 
 // NewKeychain returns a new keychain containing [keys]
 func NewKeychain(keys ...*secp256k1.PrivateKey) *Keychain {
-	evmAddrs := make(set.Set[gethcommon.Address])
 	kc := &Keychain{
-		luxAddrToKeyIndex: make(map[ids.ShortID]int),
-		evmAddrToKeyIndex: make(map[gethcommon.Address]int),
-		Addrs:             make(set.Set[ids.ShortID]),
-		// EVMAddrs / KeccakAddrs / EthAddrs share the SAME underlying
-		// map so Adds via any field are visible from all three.
-		EVMAddrs:    evmAddrs,
-		KeccakAddrs: evmAddrs,
-		EthAddrs:    evmAddrs,
+		utxoAddrToKeyIndex: make(map[ids.ShortID]int),
+		evmAddrToKeyIndex:  make(map[gethcommon.Address]int),
+		Addrs:              make(set.Set[ids.ShortID]),
+		EVMAddrs:           make(set.Set[gethcommon.Address]),
 	}
 	for _, key := range keys {
 		kc.Add(key)
@@ -112,17 +99,15 @@ func (kc *Keychain) Add(key *secp256k1.PrivateKey) {
 	// Convert public key to Lux address using hash160
 	pkBytes := pk.Bytes()
 	addressBytes := secp256k1.PubkeyBytesToAddress(pkBytes)
-	luxAddr, _ := ids.ToShortID(addressBytes)
+	utxoAddr, _ := ids.ToShortID(addressBytes)
 
-	if _, ok := kc.luxAddrToKeyIndex[luxAddr]; !ok {
-		kc.luxAddrToKeyIndex[luxAddr] = len(kc.Keys)
+	if _, ok := kc.utxoAddrToKeyIndex[utxoAddr]; !ok {
+		kc.utxoAddrToKeyIndex[utxoAddr] = len(kc.Keys)
 		cryptoAddr := secp256k1.PubkeyToAddress(*pk.ToECDSA())
 		evmAddr := gethcommon.Address(cryptoAddr)
 		kc.evmAddrToKeyIndex[evmAddr] = len(kc.Keys)
 		kc.Keys = append(kc.Keys, key)
-		kc.Addrs.Add(luxAddr)
-		// One write — EVMAddrs / KeccakAddrs / EthAddrs all see it
-		// since they share the underlying map.
+		kc.Addrs.Add(utxoAddr)
 		kc.EVMAddrs.Add(evmAddr)
 	}
 }
@@ -145,20 +130,6 @@ func (kc Keychain) GetByEVM(addr gethcommon.Address) (keychain.Signer, bool) {
 		return &luxSigner{key: kc.Keys[i]}, true
 	}
 	return nil, false
-}
-
-// GetByKeccak is the deprecated alias for GetByEVM.
-//
-// Deprecated: use GetByEVM.
-func (kc Keychain) GetByKeccak(addr gethcommon.Address) (keychain.Signer, bool) {
-	return kc.GetByEVM(addr)
-}
-
-// GetEth is the deprecated alias for GetByEVM.
-//
-// Deprecated: use GetByEVM.
-func (kc Keychain) GetEth(addr gethcommon.Address) (keychain.Signer, bool) {
-	return kc.GetByEVM(addr)
 }
 
 // AddressSet returns a set of addresses this keychain manages
@@ -195,20 +166,6 @@ func (kc Keychain) List() []ids.ShortID {
 // the relevant axis in a multi-chain keychain.
 func (kc Keychain) EVMAddresses() set.Set[gethcommon.Address] {
 	return kc.EVMAddrs
-}
-
-// KeccakAddresses is the deprecated alias for EVMAddresses.
-//
-// Deprecated: use EVMAddresses.
-func (kc Keychain) KeccakAddresses() set.Set[gethcommon.Address] {
-	return kc.EVMAddresses()
-}
-
-// EthAddresses is the deprecated alias for EVMAddresses.
-//
-// Deprecated: use EVMAddresses.
-func (kc Keychain) EthAddresses() set.Set[gethcommon.Address] {
-	return kc.EVMAddresses()
 }
 
 // New returns a newly generated private key
@@ -289,7 +246,7 @@ func (kc *Keychain) String() string {
 
 // to avoid internals type assertions
 func (kc Keychain) get(id ids.ShortID) (*secp256k1.PrivateKey, bool) {
-	if i, ok := kc.luxAddrToKeyIndex[id]; ok {
+	if i, ok := kc.utxoAddrToKeyIndex[id]; ok {
 		return kc.Keys[i], true
 	}
 	return nil, false
