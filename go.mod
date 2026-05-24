@@ -8,7 +8,7 @@ require (
 	github.com/luxfi/cache v1.2.1
 	github.com/luxfi/codec v1.1.4
 	github.com/luxfi/constants v1.4.7
-	github.com/luxfi/crypto v1.19.13
+	github.com/luxfi/crypto v1.19.15
 	github.com/luxfi/database v1.17.44
 	github.com/luxfi/formatting v1.0.1
 	github.com/luxfi/geth v1.16.98
