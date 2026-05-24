@@ -58,23 +58,42 @@ func (s *luxSigner) AddressBytes() []byte {
 
 // Keychain is a collection of keys that can be used to spend outputs
 type Keychain struct {
-	luxAddrToKeyIndex map[ids.ShortID]int
-	ethAddrToKeyIndex map[gethcommon.Address]int
+	luxAddrToKeyIndex    map[ids.ShortID]int
+	keccakAddrToKeyIndex map[gethcommon.Address]int
 
 	// These can be used to iterate over. However, they should not be modified
 	// externally.
-	Addrs    set.Set[ids.ShortID]
-	EthAddrs set.Set[gethcommon.Address]
-	Keys     []*secp256k1.PrivateKey
+	//
+	// KeccakAddrs holds the 20-byte addresses derived as
+	// Keccak256(uncompressed_secp256k1_pubkey)[12:] — the conventional
+	// EVM-runtime address format consumed by Lux C-Chain, Partner EVM,
+	// Hanzo EVM, Polygon, BSC, etc. The derivation is a primitive
+	// (Keccak + secp256k1), not Ethereum-specific.
+	//
+	// EthAddrs is the same underlying set retained as a Deprecated
+	// alias so downstream callers (mpc, cli, kms, state) don't break
+	// in one wave. Reads via either field return identical data.
+	//
+	// Deprecated: use KeccakAddrs.
+	Addrs       set.Set[ids.ShortID]
+	KeccakAddrs set.Set[gethcommon.Address]
+	EthAddrs    set.Set[gethcommon.Address] // Deprecated: same map as KeccakAddrs
+	Keys        []*secp256k1.PrivateKey
 }
 
 // NewKeychain returns a new keychain containing [keys]
 func NewKeychain(keys ...*secp256k1.PrivateKey) *Keychain {
+	keccakAddrs := make(set.Set[gethcommon.Address])
 	kc := &Keychain{
-		luxAddrToKeyIndex: make(map[ids.ShortID]int),
-		ethAddrToKeyIndex: make(map[gethcommon.Address]int),
-		Addrs:             make(set.Set[ids.ShortID]),
-		EthAddrs:          make(set.Set[gethcommon.Address]),
+		luxAddrToKeyIndex:    make(map[ids.ShortID]int),
+		keccakAddrToKeyIndex: make(map[gethcommon.Address]int),
+		Addrs:                make(set.Set[ids.ShortID]),
+		// KeccakAddrs and EthAddrs share the SAME underlying map so
+		// Adds via either field are visible from both. set.Set is a
+		// map type (reference semantics), so the two struct fields
+		// hold the same map header.
+		KeccakAddrs: keccakAddrs,
+		EthAddrs:    keccakAddrs,
 	}
 	for _, key := range keys {
 		kc.Add(key)
@@ -93,11 +112,13 @@ func (kc *Keychain) Add(key *secp256k1.PrivateKey) {
 	if _, ok := kc.luxAddrToKeyIndex[luxAddr]; !ok {
 		kc.luxAddrToKeyIndex[luxAddr] = len(kc.Keys)
 		cryptoAddr := secp256k1.PubkeyToAddress(*pk.ToECDSA())
-		ethAddr := gethcommon.Address(cryptoAddr)
-		kc.ethAddrToKeyIndex[ethAddr] = len(kc.Keys)
+		keccakAddr := gethcommon.Address(cryptoAddr)
+		kc.keccakAddrToKeyIndex[keccakAddr] = len(kc.Keys)
 		kc.Keys = append(kc.Keys, key)
 		kc.Addrs.Add(luxAddr)
-		kc.EthAddrs.Add(ethAddr)
+		// One write — both KeccakAddrs and EthAddrs see it since they
+		// share the underlying map.
+		kc.KeccakAddrs.Add(keccakAddr)
 	}
 }
 
@@ -111,13 +132,22 @@ func (kc Keychain) Get(id ids.ShortID) (keychain.Signer, bool) {
 	return &luxSigner{key: signer}, true
 }
 
-// GetEth gets a key from the keychain by Ethereum address.
-// Returns keychain.Signer for wallet operations
-func (kc Keychain) GetEth(addr gethcommon.Address) (keychain.Signer, bool) {
-	if i, ok := kc.ethAddrToKeyIndex[addr]; ok {
+// GetByKeccak gets a key from the keychain by its 20-byte Keccak-
+// derived address (the EVM-runtime address format consumed by any
+// EVM-compatible chain). Returns keychain.Signer for wallet
+// operations.
+func (kc Keychain) GetByKeccak(addr gethcommon.Address) (keychain.Signer, bool) {
+	if i, ok := kc.keccakAddrToKeyIndex[addr]; ok {
 		return &luxSigner{key: kc.Keys[i]}, true
 	}
 	return nil, false
+}
+
+// GetEth is the deprecated alias for GetByKeccak.
+//
+// Deprecated: use GetByKeccak.
+func (kc Keychain) GetEth(addr gethcommon.Address) (keychain.Signer, bool) {
+	return kc.GetByKeccak(addr)
 }
 
 // AddressSet returns a set of addresses this keychain manages
@@ -144,9 +174,23 @@ func (kc Keychain) List() []ids.ShortID {
 	return addrs
 }
 
-// EthAddresses returns a list of addresses this keychain manages
+// KeccakAddresses returns the set of 20-byte Keccak-derived addresses
+// this keychain manages — the EVM-runtime address format consumed by
+// any EVM-compatible chain (Lux C-Chain, Partner EVM, etc.).
+//
+// Naming: the derivation primitive (Keccak256 of secp256k1 pubkey)
+// is what the set carries; the name reflects the value, not the
+// downstream brand that happens to consume it. See PrivateKey
+// docstring in luxfi/crypto/secp256k1/keys.go for the rationale.
+func (kc Keychain) KeccakAddresses() set.Set[gethcommon.Address] {
+	return kc.KeccakAddrs
+}
+
+// EthAddresses is the deprecated alias for KeccakAddresses.
+//
+// Deprecated: use KeccakAddresses.
 func (kc Keychain) EthAddresses() set.Set[gethcommon.Address] {
-	return kc.EthAddrs
+	return kc.KeccakAddresses()
 }
 
 // New returns a newly generated private key
