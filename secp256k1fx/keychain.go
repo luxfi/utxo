@@ -65,7 +65,7 @@ func (s *luxSigner) AddressBytes() []byte {
 //     ids.ShortID). Consumed by UTXO-model chains.
 //
 //   - EVMAddrs: 20-byte account addresses consumed by EVM-runtime chains
-//     (Lux C-Chain, Partner EVM, Hanzo EVM, Polygon, BSC, etc.). The
+//     (Lux C-Chain, downstream EVM L1s, Hanzo EVM, Polygon, BSC, etc.). The
 //     internal derivation uses Keccak256, but the name reflects what
 //     the value IS (EVM-runtime account address), not how it's hashed.
 type Keychain struct {
@@ -158,7 +158,7 @@ func (kc Keychain) List() []ids.ShortID {
 
 // EVMAddresses returns the set of 20-byte EVM-runtime account
 // addresses this keychain manages — the format consumed by any
-// EVM-compatible chain (Lux C-Chain, Partner EVM, etc.).
+// EVM-compatible chain (Lux C-Chain, downstream EVM L1s, etc.).
 //
 // Naming: the value IS "EVM-runtime account address" — that's the
 // data model that consumes it. The derivation primitive (Keccak256
