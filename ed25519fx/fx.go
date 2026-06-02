@@ -198,9 +198,9 @@ func (fx *Fx) VerifySpend(utx UnsignedTx, in *TransferInput, cred *Credential, u
 //
 // However, to match the secp256k1fx pattern (addresses in OutputOwners, sigs in
 // Credential), we verify by:
-// 1. The Credential stores [SigLen]byte signatures.
-// 2. We need the public key to verify — so for Ed25519, OutputOwners.Addrs are
-//    20-byte hashes. The wallet must provide the pubkey→address mapping.
+//  1. The Credential stores [SigLen]byte signatures.
+//  2. We need the public key to verify — so for Ed25519, OutputOwners.Addrs are
+//     20-byte hashes. The wallet must provide the pubkey→address mapping.
 //
 // For Ed25519, we use a different approach than secp256k1: the tx bytes are
 // signed directly, and verification requires the public key. Since we only store
