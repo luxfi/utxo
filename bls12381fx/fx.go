@@ -25,15 +25,15 @@ const verifyCacheSize = 256
 var attestationSignCtx = []byte("lux-x-chain-attestation-bls12381-v1")
 
 var (
-	ErrWrongVMType               = errors.New("wrong vm type")
-	ErrNotTransferable           = errors.New("bls12381fx outputs are not transferable (attestation-only)")
-	ErrWrongOpType               = errors.New("wrong operation type")
-	ErrWrongUTXOType             = errors.New("wrong utxo type")
-	ErrWrongInputType            = errors.New("wrong input type")
-	ErrWrongCredentialType       = errors.New("wrong credential type")
-	ErrWrongNumberOfUTXOs        = errors.New("wrong number of utxos for the operation")
-	ErrSignerBitmapPopcount      = errors.New("signer bitmap popcount does not meet threshold")
-	ErrSignerBitmapOutOfRange    = errors.New("signer bitmap references pubkey out of range")
+	ErrWrongVMType            = errors.New("wrong vm type")
+	ErrNotTransferable        = errors.New("bls12381fx outputs are not transferable (attestation-only)")
+	ErrWrongOpType            = errors.New("wrong operation type")
+	ErrWrongUTXOType          = errors.New("wrong utxo type")
+	ErrWrongInputType         = errors.New("wrong input type")
+	ErrWrongCredentialType    = errors.New("wrong credential type")
+	ErrWrongNumberOfUTXOs     = errors.New("wrong number of utxos for the operation")
+	ErrSignerBitmapPopcount   = errors.New("signer bitmap popcount does not meet threshold")
+	ErrSignerBitmapOutOfRange = errors.New("signer bitmap references pubkey out of range")
 )
 
 // VM is the interface this Fx requires.
@@ -52,9 +52,9 @@ type TestVM struct {
 	Log   log.Logger
 }
 
-func (vm *TestVM) Clock() *mockable.Clock     { return &vm.Clk }
+func (vm *TestVM) Clock() *mockable.Clock        { return &vm.Clk }
 func (vm *TestVM) CodecRegistry() codec.Registry { return vm.Codec }
-func (vm *TestVM) Logger() log.Logger          { return vm.Log }
+func (vm *TestVM) Logger() log.Logger            { return vm.Log }
 
 // UnsignedTx is what this Fx is signing over.
 type UnsignedTx interface{ Bytes() []byte }
