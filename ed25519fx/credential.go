@@ -37,8 +37,8 @@ var (
 // Unlike secp256k1, Ed25519 cannot recover the public key from a signature,
 // so the credential must carry the public keys alongside the signatures.
 type Credential struct {
-	Sigs    [][SigLen]byte   `serialize:"true" json:"signatures"`
-	PubKeys [][]byte         `serialize:"true" json:"publicKeys"`
+	Sigs    [][SigLen]byte `serialize:"true" json:"signatures"`
+	PubKeys [][]byte       `serialize:"true" json:"publicKeys"`
 }
 
 // Verify validates the credential structure.
