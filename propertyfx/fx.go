@@ -30,14 +30,9 @@ func (fx *Fx) Initialize(vmIntf interface{}) error {
 	log := fx.VM.Logger()
 	log.Debug("initializing nft fx")
 
-	c := fx.VM.CodecRegistry()
-	return errors.Join(
-		c.RegisterType(&MintOutput{}),
-		c.RegisterType(&OwnedOutput{}),
-		c.RegisterType(&MintOperation{}),
-		c.RegisterType(&BurnOperation{}),
-		c.RegisterType(&Credential{}),
-	)
+	// ZAP-native: wire schemas are compile-time static. No runtime
+	// codec registration needed.
+	return nil
 }
 
 func (fx *Fx) VerifyOperation(txIntf, opIntf, credIntf interface{}, utxosIntf []interface{}) error {

@@ -4,14 +4,13 @@
 package secp256r1fx
 
 import (
-	"github.com/luxfi/codec"
 	log "github.com/luxfi/log"
 	"github.com/luxfi/timer/mockable"
 )
 
-// VM that this Fx must be run by
+// VM that this Fx must be run by. ZAP-native: no runtime codec
+// registration — wire schemas are compile-time static.
 type VM interface {
-	CodecRegistry() codec.Registry
 	Clock() *mockable.Clock
 	Logger() log.Logger
 }
@@ -20,17 +19,12 @@ var _ VM = (*TestVM)(nil)
 
 // TestVM is a minimal implementation of a VM
 type TestVM struct {
-	Clk   mockable.Clock
-	Codec codec.Registry
-	Log   log.Logger
+	Clk mockable.Clock
+	Log log.Logger
 }
 
 func (vm *TestVM) Clock() *mockable.Clock {
 	return &vm.Clk
-}
-
-func (vm *TestVM) CodecRegistry() codec.Registry {
-	return vm.Codec
 }
 
 func (vm *TestVM) Logger() log.Logger {
