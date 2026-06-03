@@ -6,7 +6,6 @@ package utxo
 import (
 	"fmt"
 
-	"github.com/luxfi/codec"
 	"github.com/luxfi/ids"
 	"github.com/luxfi/math/set"
 	"github.com/luxfi/vm/chains/atomic"
@@ -15,15 +14,14 @@ import (
 var _ AtomicUTXOManager = (*atomicUTXOManager)(nil)
 
 type atomicUTXOManager struct {
-	sm    atomic.SharedMemory
-	codec codec.Manager
+	sm atomic.SharedMemory
 }
 
-func NewAtomicUTXOManager(sm atomic.SharedMemory, codec codec.Manager) AtomicUTXOManager {
-	return &atomicUTXOManager{
-		sm:    sm,
-		codec: codec,
-	}
+// NewAtomicUTXOManager returns an AtomicUTXOManager backed by ZAP-native
+// wire bytes stored in cross-chain shared memory. Caller must have
+// invoked RegisterParseUTXO before the first GetAtomicUTXOs call.
+func NewAtomicUTXOManager(sm atomic.SharedMemory) AtomicUTXOManager {
+	return &atomicUTXOManager{sm: sm}
 }
 
 func (a *atomicUTXOManager) GetAtomicUTXOs(
@@ -63,11 +61,11 @@ func (a *atomicUTXOManager) GetAtomicUTXOs(
 
 	utxos := make([]*UTXO, len(allUTXOBytes))
 	for i, utxoBytes := range allUTXOBytes {
-		utxo := &UTXO{}
-		if _, err := a.codec.Unmarshal(utxoBytes, utxo); err != nil {
+		u, err := ParseUTXO(utxoBytes)
+		if err != nil {
 			return nil, ids.ShortID{}, ids.Empty, fmt.Errorf("error parsing UTXO: %w", err)
 		}
-		utxos[i] = utxo
+		utxos[i] = u
 	}
 	return utxos, lastAddrID, lastUTXOID, nil
 }
@@ -84,13 +82,12 @@ func (a *atomicUTXOManager) GetAtomicUTXOs(
 // * Any error that may have occurred upstream.
 func GetAtomicUTXOs(
 	sharedMemory atomic.SharedMemory,
-	codec codec.Manager,
 	chainID ids.ID,
 	addrs set.Set[ids.ShortID],
 	startAddr ids.ShortID,
 	startUTXOID ids.ID,
 	limit int,
 ) ([]*UTXO, ids.ShortID, ids.ID, error) {
-	manager := NewAtomicUTXOManager(sharedMemory, codec)
+	manager := NewAtomicUTXOManager(sharedMemory)
 	return manager.GetAtomicUTXOs(chainID, addrs, startAddr, startUTXOID, limit)
 }

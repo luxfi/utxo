@@ -6,10 +6,8 @@ package bls12381fx
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/luxfi/cache/lru"
-	"github.com/luxfi/codec"
 	"github.com/luxfi/crypto/bls"
 	"github.com/luxfi/crypto/hash"
 	"github.com/luxfi/ids"
@@ -36,9 +34,9 @@ var (
 	ErrSignerBitmapOutOfRange = errors.New("signer bitmap references pubkey out of range")
 )
 
-// VM is the interface this Fx requires.
+// VM is the interface this Fx requires. ZAP-native: no runtime codec
+// registration — wire schemas are compile-time static in wire.go.
 type VM interface {
-	CodecRegistry() codec.Registry
 	Clock() *mockable.Clock
 	Logger() log.Logger
 }
@@ -47,14 +45,12 @@ var _ VM = (*TestVM)(nil)
 
 // TestVM is a minimal VM for tests.
 type TestVM struct {
-	Clk   mockable.Clock
-	Codec codec.Registry
-	Log   log.Logger
+	Clk mockable.Clock
+	Log log.Logger
 }
 
-func (vm *TestVM) Clock() *mockable.Clock        { return &vm.Clk }
-func (vm *TestVM) CodecRegistry() codec.Registry { return vm.Codec }
-func (vm *TestVM) Logger() log.Logger            { return vm.Log }
+func (vm *TestVM) Clock() *mockable.Clock { return &vm.Clk }
+func (vm *TestVM) Logger() log.Logger     { return vm.Log }
 
 // UnsignedTx is what this Fx is signing over.
 type UnsignedTx interface{ Bytes() []byte }
@@ -80,24 +76,9 @@ func (fx *Fx) Initialize(vmIntf interface{}) error {
 	if !logr.IsZero() {
 		logr.Debug("initializing bls12381fx (attestation-only)")
 	}
-	if fx.VM == nil {
-		return nil
-	}
-	c := fx.VM.CodecRegistry()
-	if c == nil {
-		return nil
-	}
-	errs := []error{}
-	if err := c.RegisterType(&AttestationOutput{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	if err := c.RegisterType(&AttestationInput{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	if err := c.RegisterType(&Credential{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	return errors.Join(errs...)
+	// ZAP-native: wire schemas are compile-time static in bls12381fx/wire.go.
+	// No runtime codec registration needed.
+	return nil
 }
 
 func (*Fx) Bootstrapping() error { return nil }

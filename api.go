@@ -4,7 +4,7 @@
 package utxo
 
 import (
-	"github.com/luxfi/codec"
+	apitypes "github.com/luxfi/api/types"
 	"github.com/luxfi/formatting"
 	"github.com/luxfi/ids"
 )
@@ -31,7 +31,7 @@ type Index struct {
 type GetUTXOsArgs struct {
 	Addresses   []string            `json:"addresses"`
 	SourceChain string              `json:"sourceChain"`
-	Limit       codec.Uint32        `json:"limit"`
+	Limit       apitypes.Uint32     `json:"limit"`
 	StartIndex  Index               `json:"startIndex"`
 	Encoding    formatting.Encoding `json:"encoding"`
 }
@@ -40,7 +40,7 @@ type GetUTXOsArgs struct {
 // JSON field names match RPC conventions for compatibility across services.
 type GetUTXOsReply struct {
 	// Number of UTXOs returned
-	NumFetched codec.Uint64 `json:"numFetched"`
+	NumFetched apitypes.Uint64 `json:"numFetched"`
 	// The UTXOs
 	UTXOs []string `json:"utxos"`
 	// The last UTXO that was returned, and the address it corresponds to.
