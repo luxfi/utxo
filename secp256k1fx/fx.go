@@ -6,7 +6,6 @@ package secp256k1fx
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/luxfi/ids"
 
@@ -59,33 +58,9 @@ func (fx *Fx) Initialize(vmIntf interface{}) error {
 
 	fx.recoverCache = secp256k1.NewRecoverCache(defaultCacheSize)
 
-	if fx.VM == nil {
-		return nil
-	}
-
-	c := fx.VM.CodecRegistry()
-	if c == nil {
-		return nil
-	}
-
-	// Try to register types, but ignore duplicate registration errors
-	errs := []error{}
-	if err := c.RegisterType(&TransferInput{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	if err := c.RegisterType(&MintOutput{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	if err := c.RegisterType(&TransferOutput{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	if err := c.RegisterType(&MintOperation{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	if err := c.RegisterType(&Credential{}); err != nil && !strings.Contains(err.Error(), "duplicate type registration") {
-		errs = append(errs, err)
-	}
-	return errors.Join(errs...)
+	// ZAP-native: wire schemas are compile-time static in
+	// secp256k1fx/wire.go. No runtime codec registration needed.
+	return nil
 }
 
 func (fx *Fx) InitializeVM(vmIntf interface{}) error {
