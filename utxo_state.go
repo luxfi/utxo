@@ -8,7 +8,6 @@ import (
 
 	"github.com/luxfi/cache"
 	"github.com/luxfi/cache/metercacher"
-	"github.com/luxfi/codec"
 	"github.com/luxfi/database"
 	"github.com/luxfi/database/linkeddb"
 	"github.com/luxfi/database/prefixdb"
@@ -72,8 +71,6 @@ type UTXOWriter interface {
 }
 
 type utxoState struct {
-	codec codec.Manager
-
 	// UTXO ID -> *UTXO. If the *UTXO is nil the UTXO doesn't exist
 	utxoCache cache.Cacher[ids.ID, *UTXO]
 	utxoDB    database.Database
@@ -85,14 +82,15 @@ type utxoState struct {
 	checksum      ids.ID
 }
 
+// NewUTXOState returns a UTXOState backed by ZAP-native wire bytes
+// (no codec.Manager). Caller MUST have invoked RegisterParseUTXO at
+// boot — the fxs dispatch needed to reconstruct *UTXO from wire bytes
+// lives in the consumer package to break the import cycle.
 func NewUTXOState(
 	db database.Database,
-	codec codec.Manager,
 	trackChecksum bool,
 ) (UTXOState, error) {
 	s := &utxoState{
-		codec: codec,
-
 		utxoCache: &cache.LRU[ids.ID, *UTXO]{Size: utxoCacheSize},
 		utxoDB:    prefixdb.New(utxoPrefix, db),
 
@@ -106,7 +104,6 @@ func NewUTXOState(
 
 func NewMeteredUTXOState(
 	db database.Database,
-	codec codec.Manager,
 	metrics metric.Registerer,
 	trackChecksum bool,
 ) (UTXOState, error) {
@@ -135,8 +132,6 @@ func NewMeteredUTXOState(
 	}
 
 	s := &utxoState{
-		codec: codec,
-
 		utxoCache: utxoCache,
 		utxoDB:    prefixdb.New(utxoPrefix, db),
 
@@ -165,9 +160,10 @@ func (s *utxoState) GetUTXO(utxoID ids.ID) (*UTXO, error) {
 		return nil, err
 	}
 
-	// The key was in the database
-	utxo := &UTXO{}
-	if _, err := s.codec.Unmarshal(bytes, utxo); err != nil {
+	// The key was in the database. Parse via the consumer-registered
+	// fx-aware ParseUTXO factory (set via RegisterParseUTXO at boot).
+	utxo, err := ParseUTXO(bytes)
+	if err != nil {
 		return nil, err
 	}
 
@@ -176,7 +172,9 @@ func (s *utxoState) GetUTXO(utxoID ids.ID) (*UTXO, error) {
 }
 
 func (s *utxoState) PutUTXO(utxo *UTXO) error {
-	utxoBytes, err := s.codec.Marshal(codecVersion, utxo)
+	// ZAP-native: same bytes flow on the wire and to disk. No
+	// separate codec.Marshal step.
+	utxoBytes, err := utxo.WireBytes()
 	if err != nil {
 		return err
 	}
