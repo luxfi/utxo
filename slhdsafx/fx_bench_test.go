@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/luxfi/codec/linearcodec"
 	"github.com/luxfi/crypto/slhdsa"
 	log "github.com/luxfi/log"
 )
@@ -23,7 +22,6 @@ func BenchmarkSLH192fVerify(b *testing.B) {
 	pkBytes := sk.PublicKey.Bytes()
 
 	vm := &TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
@@ -71,7 +69,6 @@ func BenchmarkSLH192fVerifyCached(b *testing.B) {
 	pkBytes := sk.PublicKey.Bytes()
 
 	vm := &TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
