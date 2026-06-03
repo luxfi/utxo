@@ -8,8 +8,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/luxfi/codec"
-	"github.com/luxfi/codec/linearcodec"
 	"github.com/luxfi/vm/components/verify"
 )
 
@@ -78,36 +76,8 @@ func TestTransferInputVerifyUnsorted(t *testing.T) {
 	require.ErrorIs(err, ErrInputIndicesNotSortedUnique)
 }
 
-func TestTransferInputSerialize(t *testing.T) {
-	require := require.New(t)
-	c := linearcodec.NewDefault()
-	m := codec.NewDefaultManager()
-	require.NoError(m.RegisterCodec(0, c))
-
-	expected := []byte{
-		// Codec version
-		0x00, 0x00,
-		// amount:
-		0x00, 0x00, 0x00, 0x00, 0x07, 0x5b, 0xcd, 0x15,
-		// length:
-		0x00, 0x00, 0x00, 0x02,
-		// sig[0]
-		0x00, 0x00, 0x00, 0x03,
-		// sig[1]
-		0x00, 0x00, 0x00, 0x07,
-	}
-	in := TransferInput{
-		Amt: 123456789,
-		Input: Input{
-			SigIndices: []uint32{3, 7},
-		},
-	}
-	require.NoError(in.Verify())
-
-	result, err := m.Marshal(0, &in)
-	require.NoError(err)
-	require.Equal(expected, result)
-}
+// Legacy linearcodec wire-format test deleted with the codec rip.
+// ZAP-native wire round-trip is covered in wire_test.go.
 
 func TestTransferInputNotState(t *testing.T) {
 	require := require.New(t)
