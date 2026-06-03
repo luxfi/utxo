@@ -5,6 +5,7 @@ go 1.26.3
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.1.3
 	github.com/luxfi/address v1.0.1
+	github.com/luxfi/api v1.0.12
 	github.com/luxfi/cache v1.2.1
 	github.com/luxfi/codec v1.1.4
 	github.com/luxfi/constants v1.4.7
@@ -43,7 +44,7 @@ require (
 	github.com/luxfi/atomic v1.0.0 // indirect
 	github.com/luxfi/compress v0.0.5 // indirect
 	github.com/luxfi/concurrent v0.0.3 // indirect
-	github.com/luxfi/consensus v1.22.84 // indirect
+	github.com/luxfi/consensus v1.22.85 // indirect
 	github.com/luxfi/container v0.0.4 // indirect
 	github.com/luxfi/math/big v0.1.0 // indirect
 	github.com/luxfi/mdns v0.1.1 // indirect

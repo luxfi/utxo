@@ -8,7 +8,6 @@ import (
 	"errors"
 	"sort"
 
-	"github.com/luxfi/codec"
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
 	"github.com/luxfi/runtime"
@@ -86,9 +85,21 @@ func (out *TransferableOutput) Verify() error {
 	}
 }
 
+// wireBytesOrNil returns the ZAP wire envelope for a TransferableOut if
+// the inner fxs primitive implements the per-fx wire.go Bytes() bridge.
+// Returns nil when the type does not carry a wire adapter — callers must
+// not rely on a stable sort across unknown types. Every production fxs
+// primitive (secp256k1fx/mldsafx/slhdsafx/ed25519fx/secp256r1fx/schnorrfx/
+// bls12381fx/nftfx/propertyfx) satisfies this contract via wire.go.
+func wireBytesOrNil(out TransferableOut) []byte {
+	if ws, ok := out.(interface{ Bytes() []byte }); ok {
+		return ws.Bytes()
+	}
+	return nil
+}
+
 type innerSortTransferableOutputs struct {
-	outs  []*TransferableOutput
-	codec codec.Manager
+	outs []*TransferableOutput
 }
 
 func (outs *innerSortTransferableOutputs) Less(i, j int) bool {
@@ -105,15 +116,11 @@ func (outs *innerSortTransferableOutputs) Less(i, j int) bool {
 		return false
 	}
 
-	iBytes, err := outs.codec.Marshal(codecVersion, &iOut.Out)
-	if err != nil {
-		return false
-	}
-	jBytes, err := outs.codec.Marshal(codecVersion, &jOut.Out)
-	if err != nil {
-		return false
-	}
-	return bytes.Compare(iBytes, jBytes) == -1
+	// ZAP-native canonical sort: bytes of the inner fx wire envelope.
+	// The per-fx wire.go Bytes() returns the same TypeKind+ShapeKind+
+	// ZAP-message envelope that hits the wire and disk — single source
+	// of truth for total ordering, no separate codec marshal step.
+	return bytes.Compare(wireBytesOrNil(iOut.Out), wireBytesOrNil(jOut.Out)) == -1
 }
 
 func (outs *innerSortTransferableOutputs) Len() int {
@@ -125,14 +132,15 @@ func (outs *innerSortTransferableOutputs) Swap(i, j int) {
 	o[j], o[i] = o[i], o[j]
 }
 
-// SortTransferableOutputs sorts output objects
-func SortTransferableOutputs(outs []*TransferableOutput, c codec.Manager) {
-	sort.Sort(&innerSortTransferableOutputs{outs: outs, codec: c})
+// SortTransferableOutputs sorts output objects by (AssetID, inner-output
+// ZAP wire bytes). ZAP-native — no codec.Manager needed.
+func SortTransferableOutputs(outs []*TransferableOutput) {
+	sort.Sort(&innerSortTransferableOutputs{outs: outs})
 }
 
-// IsSortedTransferableOutputs returns true if output objects are sorted
-func IsSortedTransferableOutputs(outs []*TransferableOutput, c codec.Manager) bool {
-	return sort.IsSorted(&innerSortTransferableOutputs{outs: outs, codec: c})
+// IsSortedTransferableOutputs returns true if output objects are sorted.
+func IsSortedTransferableOutputs(outs []*TransferableOutput) bool {
+	return sort.IsSorted(&innerSortTransferableOutputs{outs: outs})
 }
 
 type TransferableInput struct {
@@ -213,7 +221,6 @@ func VerifyTx(
 	feeAssetID ids.ID,
 	allIns [][]*TransferableInput,
 	allOuts [][]*TransferableOutput,
-	c codec.Manager,
 ) error {
 	fc := NewFlowChecker()
 
@@ -227,7 +234,7 @@ func VerifyTx(
 			}
 			fc.Produce(out.AssetID(), out.Output().Amount())
 		}
-		if !IsSortedTransferableOutputs(outs, c) {
+		if !IsSortedTransferableOutputs(outs) {
 			return ErrOutputsNotSorted
 		}
 	}
