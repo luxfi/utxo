@@ -10,7 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/luxfi/codec/linearcodec"
 	"github.com/luxfi/crypto/hash"
 	"github.com/luxfi/ids"
 	log "github.com/luxfi/log"
@@ -31,7 +30,6 @@ func BenchmarkP256Verify(b *testing.B) {
 	}
 
 	vm := &TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
@@ -85,7 +83,6 @@ func BenchmarkP256VerifyCached(b *testing.B) {
 	}
 
 	vm := &TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
