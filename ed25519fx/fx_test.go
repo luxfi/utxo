@@ -11,7 +11,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/luxfi/codec/linearcodec"
 	"github.com/luxfi/crypto/hash"
 	"github.com/luxfi/ids"
 	log "github.com/luxfi/log"
@@ -25,7 +24,6 @@ func newTestFx(t *testing.T) (*Fx, ed25519.PrivateKey, ed25519.PublicKey, ids.Sh
 	require.NoError(err)
 
 	vm := &TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
@@ -44,7 +42,6 @@ func newTestFx(t *testing.T) (*Fx, ed25519.PrivateKey, ed25519.PublicKey, ids.Sh
 
 func TestFxInitialize(t *testing.T) {
 	vm := TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	fx := Fx{}
@@ -238,7 +235,6 @@ func TestFxVerifyTransferBootstrapping(t *testing.T) {
 	require.NoError(err)
 
 	vm := &TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
