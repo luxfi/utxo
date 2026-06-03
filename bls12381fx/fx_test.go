@@ -11,7 +11,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/luxfi/codec/linearcodec"
 	"github.com/luxfi/crypto/bls"
 	log "github.com/luxfi/log"
 )
@@ -24,7 +23,6 @@ func (t *testTx) Bytes() []byte { return t.b }
 func newTestFx(t *testing.T) *Fx {
 	t.Helper()
 	vm := &TestVM{
-		Codec: linearcodec.NewDefault(),
 		Log:   log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
@@ -82,7 +80,7 @@ func signAttestation(t *testing.T, signers []*bls.SecretKey, attestedHash [Attes
 }
 
 func TestFxInitialize(t *testing.T) {
-	vm := &TestVM{Codec: linearcodec.NewDefault(), Log: log.NewNoOpLogger()}
+	vm := &TestVM{Log: log.NewNoOpLogger()}
 	fx := &Fx{}
 	require.NoError(t, fx.Initialize(vm))
 }
