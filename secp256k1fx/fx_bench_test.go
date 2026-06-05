@@ -11,6 +11,7 @@ import (
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
 	log "github.com/luxfi/log"
+	"github.com/luxfi/timer/mockable"
 )
 
 // BenchmarkSecp256k1Verify is the BASELINE for CostPerSignature calibration.
@@ -28,7 +29,8 @@ func BenchmarkSecp256k1Verify(b *testing.B) {
 	}
 
 	vm := &TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
 

@@ -19,12 +19,12 @@ var _ VM = (*TestVM)(nil)
 
 // TestVM is a minimal implementation of a VM
 type TestVM struct {
-	Clk mockable.Clock
+	Clk *mockable.Clock
 	Log log.Logger
 }
 
 func (vm *TestVM) Clock() *mockable.Clock {
-	return &vm.Clk
+	return vm.Clk
 }
 
 func (vm *TestVM) Logger() log.Logger {
