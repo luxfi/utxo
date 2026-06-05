@@ -13,6 +13,7 @@ import (
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
 	log "github.com/luxfi/log"
+	"github.com/luxfi/timer/mockable"
 )
 
 var (
@@ -52,7 +53,8 @@ func init() {
 
 func TestFxInitialize(t *testing.T) {
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	fx := Fx{}
 	require.NoError(t, fx.Initialize(&vm))
@@ -67,7 +69,8 @@ func TestFxInitializeInvalid(t *testing.T) {
 func TestFxVerifyTransfer(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -104,7 +107,8 @@ func TestFxVerifyTransfer(t *testing.T) {
 func TestFxVerifyTransferNilTx(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -139,7 +143,8 @@ func TestFxVerifyTransferNilTx(t *testing.T) {
 func TestFxVerifyTransferNilOutput(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -165,7 +170,8 @@ func TestFxVerifyTransferNilOutput(t *testing.T) {
 func TestFxVerifyTransferNilInput(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -195,7 +201,8 @@ func TestFxVerifyTransferNilInput(t *testing.T) {
 func TestFxVerifyTransferNilCredential(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -226,7 +233,8 @@ func TestFxVerifyTransferNilCredential(t *testing.T) {
 func TestFxVerifyTransferInvalidOutput(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -262,7 +270,8 @@ func TestFxVerifyTransferInvalidOutput(t *testing.T) {
 func TestFxVerifyTransferWrongAmounts(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -298,7 +307,8 @@ func TestFxVerifyTransferWrongAmounts(t *testing.T) {
 func TestFxVerifyTransferTimelocked(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -334,7 +344,8 @@ func TestFxVerifyTransferTimelocked(t *testing.T) {
 func TestFxVerifyTransferTooManySigners(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -371,7 +382,8 @@ func TestFxVerifyTransferTooManySigners(t *testing.T) {
 func TestFxVerifyTransferTooFewSigners(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -405,7 +417,8 @@ func TestFxVerifyTransferTooFewSigners(t *testing.T) {
 func TestFxVerifyTransferMismatchedSigners(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -442,7 +455,8 @@ func TestFxVerifyTransferMismatchedSigners(t *testing.T) {
 func TestFxVerifyTransferInvalidSignature(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -481,7 +495,8 @@ func TestFxVerifyTransferInvalidSignature(t *testing.T) {
 func TestFxVerifyTransferWrongSigner(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -520,7 +535,8 @@ func TestFxVerifyTransferWrongSigner(t *testing.T) {
 func TestFxVerifyTransferSigIndexOOB(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -559,7 +575,8 @@ func TestFxVerifyTransferSigIndexOOB(t *testing.T) {
 func TestFxVerifyOperation(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -610,7 +627,8 @@ func TestFxVerifyOperation(t *testing.T) {
 func TestFxVerifyOperationUnknownTx(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -661,7 +679,8 @@ func TestFxVerifyOperationUnknownTx(t *testing.T) {
 func TestFxVerifyOperationUnknownOperation(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -690,7 +709,8 @@ func TestFxVerifyOperationUnknownOperation(t *testing.T) {
 func TestFxVerifyOperationUnknownCredential(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -737,7 +757,8 @@ func TestFxVerifyOperationUnknownCredential(t *testing.T) {
 func TestFxVerifyOperationWrongNumberOfUTXOs(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -789,7 +810,8 @@ func TestFxVerifyOperationWrongNumberOfUTXOs(t *testing.T) {
 func TestFxVerifyOperationUnknownUTXOType(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -833,7 +855,8 @@ func TestFxVerifyOperationUnknownUTXOType(t *testing.T) {
 func TestFxVerifyOperationInvalidOperationVerify(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -882,7 +905,8 @@ func TestFxVerifyOperationInvalidOperationVerify(t *testing.T) {
 func TestFxVerifyOperationMismatchedMintOutputs(t *testing.T) {
 	require := require.New(t)
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -928,7 +952,8 @@ func TestFxVerifyOperationMismatchedMintOutputs(t *testing.T) {
 
 func TestVerifyPermission(t *testing.T) {
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	fx := Fx{}
 	require.NoError(t, fx.Initialize(&vm))
