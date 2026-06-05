@@ -13,6 +13,7 @@ import (
 	"github.com/luxfi/crypto/secp256k1"
 	"github.com/luxfi/ids"
 	log "github.com/luxfi/log"
+	"github.com/luxfi/timer/mockable"
 	"github.com/luxfi/utxo/secp256k1fx"
 )
 
@@ -38,7 +39,8 @@ var (
 
 func TestFxInitialize(t *testing.T) {
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	fx := Fx{}
 	require.NoError(t, fx.Initialize(&vm))
@@ -54,7 +56,8 @@ func TestFxVerifyMintOperation(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -89,7 +92,8 @@ func TestFxVerifyMintOperationWrongTx(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -122,7 +126,8 @@ func TestFxVerifyMintOperationWrongNumberUTXOs(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -152,7 +157,8 @@ func TestFxVerifyMintOperationWrongCredential(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -183,7 +189,8 @@ func TestFxVerifyMintOperationInvalidUTXO(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -213,7 +220,8 @@ func TestFxVerifyMintOperationFailingVerification(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -250,7 +258,8 @@ func TestFxVerifyMintOperationInvalidGroupID(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -287,7 +296,8 @@ func TestFxVerifyTransferOperation(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -336,7 +346,8 @@ func TestFxVerifyTransferOperationWrongUTXO(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -376,7 +387,8 @@ func TestFxVerifyTransferOperationFailedVerify(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -423,7 +435,8 @@ func TestFxVerifyTransferOperationWrongGroupID(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -473,7 +486,8 @@ func TestFxVerifyTransferOperationWrongBytes(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -523,7 +537,8 @@ func TestFxVerifyTransferOperationTooSoon(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -574,7 +589,8 @@ func TestFxVerifyOperationUnknownOperation(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
@@ -609,7 +625,8 @@ func TestFxVerifyTransfer(t *testing.T) {
 	require := require.New(t)
 
 	vm := secp256k1fx.TestVM{
-		Log:   log.NewNoOpLogger(),
+		Clk: &mockable.Clock{},
+		Log: log.NewNoOpLogger(),
 	}
 	date := time.Date(2019, time.January, 19, 16, 25, 17, 3, time.UTC)
 	vm.Clk.Set(date)
