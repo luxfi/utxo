@@ -91,6 +91,16 @@ func readEnvelopePrefix(b []byte) (TypeKind, ShapeKind, []byte, error) {
 	return TypeKind(b[0]), ShapeKind(b[1]), b[EnvelopePrefix:], nil
 }
 
+// PeekDiscriminator returns the (TypeKind, ShapeKind) of a wire envelope
+// without consuming the ZAP body. Used by composite-shape dispatchers
+// (e.g. LockedOutput) that need to recurse on an inner envelope's
+// discriminator without committing to a Wrap*. Returns ErrShortEnvelope
+// when the buffer is shorter than the 2-byte prefix.
+func PeekDiscriminator(b []byte) (TypeKind, ShapeKind, error) {
+	tk, sk, _, err := readEnvelopePrefix(b)
+	return tk, sk, err
+}
+
 // writeEnvelopePrefix prepends a (TypeKind, ShapeKind) discriminator to a
 // ZAP message and returns the concatenated wire envelope.
 //
