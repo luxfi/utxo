@@ -51,8 +51,7 @@ func (fx *Fx) Initialize(vmIntf interface{}) error {
 		return err
 	}
 
-	log := fx.VM.Logger()
-	if !log.IsZero() {
+	if log := fx.VM.Logger(); log != nil && !log.IsZero() {
 		log.Debug("initializing secp256k1 fx")
 	}
 
