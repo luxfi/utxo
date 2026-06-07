@@ -51,3 +51,17 @@ type TestAddressable struct {
 func (a *TestAddressable) Addresses() [][]byte {
 	return a.Addrs
 }
+
+// Bytes satisfies the wireSerializable contract that UTXO.WireBytes requires.
+// Test-only — returns an opaque envelope keyed on Val + concatenated addrs.
+// Production fxs primitives produce the real (TypeKind+ShapeKind+ZAP) envelope.
+func (a *TestAddressable) Bytes() []byte {
+	out := make([]byte, 0, 8+len(a.Addrs)*32)
+	for i := 0; i < 8; i++ {
+		out = append(out, byte(a.Val>>(i*8)))
+	}
+	for _, addr := range a.Addrs {
+		out = append(out, addr...)
+	}
+	return out
+}
