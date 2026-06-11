@@ -25,13 +25,13 @@ X-Chain supports multiple signature schemes simultaneously. This lets anyone fro
 | `schnorrfx` | BIP-340 Schnorr | Bitcoin Taproot | TODO |
 | `cggmp21fx` | CGGMP21 threshold ECDSA | Verify classical threshold sigs (MPC custody) | TODO |
 | `frostfx` | FROST threshold Schnorr | Verify Bitcoin Taproot threshold sigs | TODO |
-| `ringtailfx` | Ringtail threshold (PQ) | Verify PQ threshold sigs from M-Chain (LP-134) | TODO |
+| `coronafx` | Corona threshold (PQ) | Verify PQ threshold sigs from M-Chain (LP-134) | TODO |
 | `ringfx` | LSAG ring signatures | Sender anonymity (Monero-style) | TODO |
 | `kemfx` | ML-KEM-768 | Stealth addresses, encrypted memos | TODO |
 
-**Threshold signing architecture:** X-Chain Fx plugins VERIFY threshold signatures. The actual threshold signing ceremonies happen on M-Chain — the MPC runtime carved out of the legacy T-Chain monolith per LP-134 (Lux Chain Topology). So `cggmp21fx`/`frostfx`/`ringtailfx` are verifier plugins that accept the final aggregated sig — the keygen + signing rounds run as ceremonies on M-Chain via `chains/thresholdvm` in MPC mode. The legacy "T-Chain" name now refers only to `teleportvm` (LP-6332), which is unrelated.
+**Threshold signing architecture:** X-Chain Fx plugins VERIFY threshold signatures. The actual threshold signing ceremonies happen on M-Chain — the MPC runtime carved out of the legacy T-Chain monolith per LP-134 (Lux Chain Topology). So `cggmp21fx`/`frostfx`/`coronafx` are verifier plugins that accept the final aggregated sig — the keygen + signing rounds run as ceremonies on M-Chain via `chains/thresholdvm` in MPC mode. The legacy "T-Chain" name now refers only to `teleportvm` (LP-6332), which is unrelated.
 
-**Not implementing:** `thresholdmldsafx` (threshold ML-DSA). No FIPS standard exists yet. Use `ringtailfx` for PQ threshold signing — Ringtail is the real standardized PQ threshold primitive.
+**Not implementing:** `thresholdmldsafx` (threshold ML-DSA). No FIPS standard exists yet. Use `coronafx` for PQ threshold signing — Corona is the real standardized PQ threshold primitive.
 
 ## Fx Interface
 
@@ -78,7 +78,7 @@ utxo/
 
 ## Related
 
-- `~/work/lux/crypto/` — PQ primitives (ML-DSA, SLH-DSA, ML-KEM, Ringtail, etc.)
+- `~/work/lux/crypto/` — PQ primitives (ML-DSA, SLH-DSA, ML-KEM, Corona, etc.)
 - `~/work/lux/precompile/` — EVM precompiles that wrap each Fx's verifier so C-Chain contracts can verify any curve
 - `~/work/lux/node/vms/xvm/` — X-Chain VM that consumes these Fx plugins
 - `~/work/lux/papers/lp-105-quasar-consensus.tex` — Quasar three-layer consensus
