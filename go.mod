@@ -7,7 +7,7 @@ require (
 	github.com/luxfi/address v1.0.1
 	github.com/luxfi/api v1.0.12
 	github.com/luxfi/cache v1.2.1
-	github.com/luxfi/constants v1.5.8-0.20260603055356-93c2c2ceb9ca
+	github.com/luxfi/constants v1.5.8
 	github.com/luxfi/crypto v1.19.17
 	github.com/luxfi/database v1.18.3
 	github.com/luxfi/formatting v1.0.1
