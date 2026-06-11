@@ -63,6 +63,7 @@ const (
 	ShapeKindPChainOwner     ShapeKind = 0x0D
 	ShapeKindSignedTx        ShapeKind = 0x0E
 	ShapeKindLockedOutput    ShapeKind = 0x0F
+	ShapeKindXVMBaseTx       ShapeKind = 0x12
 )
 
 // Errors returned by every Wrap*Primitive accessor when the discriminator
