@@ -1,4 +1,4 @@
-# LLM.md — luxfi/utxo
+# luxfi/utxo
 
 ## Overview
 
