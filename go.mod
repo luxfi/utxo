@@ -9,12 +9,12 @@ require (
 	github.com/luxfi/cache v1.2.1
 	github.com/luxfi/constants v1.5.8
 	github.com/luxfi/crypto v1.19.17
-	github.com/luxfi/database v1.18.3
+	github.com/luxfi/database v1.19.3
 	github.com/luxfi/formatting v1.0.1
 	github.com/luxfi/geth v1.16.98
 	github.com/luxfi/ids v1.2.10
 	github.com/luxfi/keychain v1.0.2
-	github.com/luxfi/log v1.4.1
+	github.com/luxfi/log v1.4.3
 	github.com/luxfi/math v1.4.1
 	github.com/luxfi/metric v1.5.7
 	github.com/luxfi/runtime v1.1.0
@@ -38,7 +38,7 @@ require (
 	github.com/gorilla/rpc v1.2.1 // indirect
 	github.com/grandcat/zeroconf v1.0.0 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
-	github.com/klauspost/compress v1.18.5 // indirect
+	github.com/klauspost/compress v1.18.6 // indirect
 	github.com/luxfi/accel v1.1.9 // indirect
 	github.com/luxfi/atomic v1.0.0 // indirect
 	github.com/luxfi/codec v1.1.4 // indirect
@@ -56,7 +56,7 @@ require (
 	github.com/luxfi/version v1.0.1 // indirect
 	github.com/luxfi/warp v1.18.6 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
-	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/mattn/go-isatty v0.0.21 // indirect
 	github.com/miekg/dns v1.1.72 // indirect
 	github.com/mr-tron/base58 v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
