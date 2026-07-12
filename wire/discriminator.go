@@ -86,6 +86,13 @@ var (
 	ErrWrongTypeKind  = errors.New("wire: TypeKind discriminator does not match expected fx family")
 	ErrWrongShapeKind = errors.New("wire: ShapeKind discriminator does not match expected primitive shape")
 	ErrShortEnvelope  = errors.New("wire: envelope shorter than 2-byte discriminator prefix")
+	// ErrTrailingBytes is returned when an envelope carries bytes beyond the
+	// self-delimiting ZAP message. zap.Parse truncates to the header size
+	// field, so a buffer with a trailing tail would wrap the same message
+	// but hash to a different id — a malleability vector. Canonical
+	// envelopes MUST consume every byte; mirrors the proven node-side
+	// block/blockwire.go ErrExtraSpace (msg.Size() != len(bytes)).
+	ErrTrailingBytes = errors.New("wire: trailing bytes after zap message (non-canonical envelope)")
 )
 
 // EnvelopePrefix is the 2-byte discriminator prefix that every fxs

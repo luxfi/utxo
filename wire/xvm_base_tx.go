@@ -14,9 +14,13 @@ import "github.com/luxfi/zap"
 //
 //	NetworkID    uint32  — network this chain lives on
 //	BlockchainID 32B     — chain id (replay-protection)
-//	Outs         []TransferableOutput  (each carries its own fx TypeKind)
-//	Ins          []TransferableInput   (each carries its own fx TypeKind)
+//	Outs         []TransferableOut  (AssetID + inner fx Output)
+//	Ins          []TransferableIn   (UTXOID + AssetID + inner fx Input)
 //	Memo         bytes   — arbitrary, up to MaxMemoSize on the verifier
+//
+// X-Chain is multi-asset: each out/in is a TransferableOut / TransferableIn
+// envelope that NAMES the asset it moves (the inner fx Output/Input carries
+// the owning fx TypeKind). See wire/transferable.go.
 //
 // Outs/Ins are variable-stride byte envelopes (each carries its own
 // TypeKind+ShapeKind+ZAP message of independent length). The list is
@@ -75,7 +79,7 @@ func (t XVMBaseTx) OutsCount() uint32 {
 	return t.obj.Uint32(OffsetXVMBaseTx_OutsCount)
 }
 
-// OutsBytes returns the concatenated TransferableOutput envelopes blob.
+// OutsBytes returns the concatenated TransferableOut envelopes blob.
 // Each entry is a self-describing wire envelope; see OutAt for the
 // index walk.
 //
@@ -84,13 +88,15 @@ func (t XVMBaseTx) OutsBytes() []byte {
 	return t.obj.Bytes(OffsetXVMBaseTx_OutsBytes)
 }
 
-// OutAt parses the i'th TransferableOutput envelope.
-func (t XVMBaseTx) OutAt(i uint32) (TransferOutput, error) {
+// OutAt parses the i'th TransferableOut envelope (AssetID + inner fx
+// Output). Callers get the AssetID via the returned accessor — X-Chain is
+// multi-asset, so every output names the asset it moves.
+func (t XVMBaseTx) OutAt(i uint32) (TransferableOut, error) {
 	env, err := nthEnvelope(t.OutsBytes(), t.OutsCount(), i)
 	if err != nil {
-		return TransferOutput{}, err
+		return TransferableOut{}, err
 	}
-	return WrapTransferOutput(env)
+	return WrapTransferableOut(env)
 }
 
 // InsCount returns the number of transferable inputs.
@@ -98,20 +104,22 @@ func (t XVMBaseTx) InsCount() uint32 {
 	return t.obj.Uint32(OffsetXVMBaseTx_InsCount)
 }
 
-// InsBytes returns the concatenated TransferableInput envelopes blob.
+// InsBytes returns the concatenated TransferableIn envelopes blob.
 //
 // READ-ONLY: aliases the underlying buffer.
 func (t XVMBaseTx) InsBytes() []byte {
 	return t.obj.Bytes(OffsetXVMBaseTx_InsBytes)
 }
 
-// InAt parses the i'th TransferableInput envelope.
-func (t XVMBaseTx) InAt(i uint32) (TransferInput, error) {
+// InAt parses the i'th TransferableIn envelope (UTXOID + AssetID + inner fx
+// Input). Callers get the spent UTXO reference + AssetID via the returned
+// accessor.
+func (t XVMBaseTx) InAt(i uint32) (TransferableIn, error) {
 	env, err := nthEnvelope(t.InsBytes(), t.InsCount(), i)
 	if err != nil {
-		return TransferInput{}, err
+		return TransferableIn{}, err
 	}
-	return WrapTransferInput(env)
+	return WrapTransferableIn(env)
 }
 
 // Memo returns the memo bytes.
