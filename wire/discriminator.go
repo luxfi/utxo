@@ -40,6 +40,9 @@ const (
 	TypeKindSecp256r1 TypeKind = 0x05
 	TypeKindSchnorr   TypeKind = 0x06
 	TypeKindBLS12381  TypeKind = 0x07
+	// Application fx families (built on secp256k1 credentials).
+	TypeKindNFT      TypeKind = 0x08
+	TypeKindProperty TypeKind = 0x09
 )
 
 // ShapeKind names the primitive shape within a fx family. Dense values,
@@ -63,7 +66,15 @@ const (
 	ShapeKindPChainOwner     ShapeKind = 0x0D
 	ShapeKindSignedTx        ShapeKind = 0x0E
 	ShapeKindLockedOutput    ShapeKind = 0x0F
-	ShapeKindXVMBaseTx       ShapeKind = 0x12
+	// NFT fx shapes (GroupID/Payload composites over OutputOwners).
+	ShapeKindNFTMintOutput     ShapeKind = 0x10
+	ShapeKindNFTTransferOutput ShapeKind = 0x11
+	ShapeKindXVMBaseTx         ShapeKind = 0x12
+	ShapeKindNFTMintOperation  ShapeKind = 0x13
+	ShapeKindNFTTransferOp     ShapeKind = 0x14
+	// Property fx shapes.
+	ShapeKindOwnedOutput   ShapeKind = 0x15
+	ShapeKindBurnOperation ShapeKind = 0x16
 )
 
 // Errors returned by every Wrap*Primitive accessor when the discriminator
@@ -100,6 +111,31 @@ func readEnvelopePrefix(b []byte) (TypeKind, ShapeKind, []byte, error) {
 func PeekDiscriminator(b []byte) (TypeKind, ShapeKind, error) {
 	tk, sk, _, err := readEnvelopePrefix(b)
 	return tk, sk, err
+}
+
+// NextEnvelope splits the first self-describing wire envelope off a packed
+// sequence of concatenated envelopes and returns (envelope, rest). The
+// envelope length is EnvelopePrefix + the inner ZAP message size (the
+// little-endian uint32 at ZAP-header offset 12..16, which counts the full
+// message including its header). This is the ONE walker for every packed
+// envelope list (SignedTx credentials, XVMBaseTx outs/ins, nft mint owners).
+func NextEnvelope(blob []byte) (env, rest []byte, err error) {
+	if EnvelopePrefix > len(blob) {
+		return nil, nil, ErrShortEnvelope
+	}
+	zapStart := EnvelopePrefix
+	if zapStart+16 > len(blob) { // 16 = ZAP header size
+		return nil, nil, ErrShortEnvelope
+	}
+	zapSize := int(blob[zapStart+12]) |
+		int(blob[zapStart+13])<<8 |
+		int(blob[zapStart+14])<<16 |
+		int(blob[zapStart+15])<<24
+	envEnd := zapStart + zapSize
+	if zapSize < 16 || envEnd > len(blob) {
+		return nil, nil, ErrShortEnvelope
+	}
+	return blob[:envEnd], blob[envEnd:], nil
 }
 
 // writeEnvelopePrefix prepends a (TypeKind, ShapeKind) discriminator to a
