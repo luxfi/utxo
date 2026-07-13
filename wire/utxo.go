@@ -142,17 +142,13 @@ type UTXOInput struct {
 // ZAP message) from the input fields. The returned slice is the
 // canonical on-wire representation.
 func NewUTXO(in UTXOInput) []byte {
-	capEstimate := zap.HeaderSize + SizeUTXO + len(in.Output) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	ob := b.StartObject(SizeUTXO)
-	for i := 0; i < 32; i++ {
-		ob.SetUint8(OffsetUTXO_TxID+i, in.TxID[i])
-	}
+	ob.SetBytesFixed(OffsetUTXO_TxID, in.TxID[:])
 	ob.SetUint32(OffsetUTXO_OutputIndex, in.OutputIndex)
-	for i := 0; i < 32; i++ {
-		ob.SetUint8(OffsetUTXO_AssetID+i, in.AssetID[i])
-	}
+	ob.SetBytesFixed(OffsetUTXO_AssetID, in.AssetID[:])
 	ob.SetBytes(OffsetUTXO_Output, in.Output)
 	ob.FinishAsRoot()
 	return writeEnvelopePrefix(TypeKindReserved, ShapeKindUTXO, b.Finish())

@@ -155,8 +155,8 @@ type CredentialInput struct {
 
 // NewCredential builds a Credential wire envelope.
 func NewCredential(in CredentialInput) []byte {
-	capEstimate := zap.HeaderSize + SizeCredential + len(in.Signatures) + len(in.PubKeys) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	sigsOff, sigsCount := writeByteList(b, in.Signatures)
 	pubKeysOff, pubKeysCount := writeByteList(b, in.PubKeys)

@@ -145,8 +145,8 @@ func NewPQTransferOutput(in PQTransferOutputInput) []byte {
 	if stride <= 0 {
 		stride = 1
 	}
-	capEstimate := zap.HeaderSize + SizePQTransferOutput + len(in.PubKeys)*stride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	pkListOff, pkListCount := writePQPubKeyList(b, in.PubKeys, stride)
 

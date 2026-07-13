@@ -91,8 +91,8 @@ type TransferInputInput struct {
 
 // NewTransferInput builds a TransferInput wire envelope.
 func NewTransferInput(in TransferInputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeTransferInput + len(in.SigIndices)*SigIndexStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	sigIdxOff, sigIdxCount := writeSigIndices(b, in.SigIndices)
 

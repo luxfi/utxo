@@ -112,15 +112,13 @@ type AttestationOutputInput struct {
 
 // NewAttestationOutput builds an AttestationOutput wire envelope.
 func NewAttestationOutput(in AttestationOutputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeAttestationOutput + len(in.PubKeys)*BLS12381PubKeyLen + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	pkListOff, pkListCount := writePubKeyList(b, in.PubKeys, BLS12381PubKeyLen)
 
 	ob := b.StartObject(SizeAttestationOutput)
-	for i := 0; i < BLS12381AttestedHashLen; i++ {
-		ob.SetUint8(OffsetAttestationOutput_AttestedHash+i, in.AttestedHash[i])
-	}
+	ob.SetBytesFixed(OffsetAttestationOutput_AttestedHash, in.AttestedHash[:BLS12381AttestedHashLen])
 	ob.SetUint32(OffsetAttestationOutput_Threshold, in.Threshold)
 	ob.SetList(OffsetAttestationOutput_PubKeyList, pkListOff, pkListCount)
 	ob.FinishAsRoot()
@@ -207,8 +205,8 @@ type AttestationInputInput struct {
 
 // NewAttestationInput builds an AttestationInput wire envelope.
 func NewAttestationInput(in AttestationInputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeAttestationInput + len(in.SignerBitmap) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	ob := b.StartObject(SizeAttestationInput)
 	ob.SetBytes(OffsetAttestationInput_SignerBitmap, in.SignerBitmap)

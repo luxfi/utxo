@@ -190,14 +190,12 @@ func NewXVMBaseTx(in XVMBaseTxInput) []byte {
 		insBlob = append(insBlob, i...)
 	}
 
-	capEstimate := zap.HeaderSize + SizeXVMBaseTx + outsTotal + insTotal + len(in.Memo) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	ob := b.StartObject(SizeXVMBaseTx)
 	ob.SetUint32(OffsetXVMBaseTx_NetworkID, in.NetworkID)
-	for i := 0; i < 32; i++ {
-		ob.SetUint8(OffsetXVMBaseTx_BlockchainID+i, in.BlockchainID[i])
-	}
+	ob.SetBytesFixed(OffsetXVMBaseTx_BlockchainID, in.BlockchainID[:])
 	ob.SetUint32(OffsetXVMBaseTx_OutsCount, uint32(len(in.Outs)))
 	ob.SetBytes(OffsetXVMBaseTx_OutsBytes, outsBlob)
 	ob.SetUint32(OffsetXVMBaseTx_InsCount, uint32(len(in.Ins)))

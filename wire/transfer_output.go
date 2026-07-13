@@ -123,8 +123,8 @@ type TransferOutputInput struct {
 
 // NewTransferOutput builds a TransferOutput wire envelope.
 func NewTransferOutput(in TransferOutputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeTransferOutput + len(in.Addresses)*AddressStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	addrListOff, addrListCount := writeAddressList(b, in.Addresses)
 

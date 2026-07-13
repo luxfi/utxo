@@ -97,10 +97,8 @@ type MintOperationInput struct {
 
 // NewMintOperation builds a MintOperation wire envelope.
 func NewMintOperation(in MintOperationInput) []byte {
-	capEstimate := zap.HeaderSize + SizeMintOperation +
-		len(in.SigIndices)*SigIndexStride +
-		len(in.MintOutput) + len(in.TransferOutput) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	sigIdxOff, sigIdxCount := writeSigIndices(b, in.SigIndices)
 
