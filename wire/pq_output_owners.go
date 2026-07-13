@@ -235,8 +235,8 @@ func NewPQOutputOwners(in PQOutputOwnersInput) []byte {
 	if stride <= 0 {
 		stride = 1 // refuse to corrupt; caller passes a meaningful stride
 	}
-	capEstimate := zap.HeaderSize + SizePQOutputOwners + len(in.PubKeys)*stride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	pkListOff, pkListCount := writePQPubKeyList(b, in.PubKeys, stride)
 

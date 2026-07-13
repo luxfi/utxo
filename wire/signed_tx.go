@@ -186,8 +186,8 @@ func NewSignedTx(in SignedTxInput) []byte {
 		credBlob = append(credBlob, c...)
 	}
 
-	capEstimate := zap.HeaderSize + SizeSignedTx + len(in.UnsignedBytes) + totalCredBytes + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	ob := b.StartObject(SizeSignedTx)
 	ob.SetBytes(OffsetSignedTx_UnsignedBytes, in.UnsignedBytes)

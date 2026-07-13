@@ -84,8 +84,8 @@ type NFTMintOutputInput struct {
 
 // NewNFTMintOutput builds an NFTMintOutput wire envelope.
 func NewNFTMintOutput(in NFTMintOutputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeNFTMintOutput + len(in.Addresses)*AddressStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	addrListOff, addrListCount := writeAddressList(b, in.Addresses)
 
@@ -174,9 +174,8 @@ type NFTTransferOutputInput struct {
 
 // NewNFTTransferOutput builds an NFTTransferOutput wire envelope.
 func NewNFTTransferOutput(in NFTTransferOutputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeNFTTransferOutput +
-		len(in.Addresses)*AddressStride + len(in.Payload) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	addrListOff, addrListCount := writeAddressList(b, in.Addresses)
 
@@ -288,9 +287,8 @@ func NewNFTMintOperation(in NFTMintOperationInput) []byte {
 	for _, o := range in.Owners {
 		ownersLen += len(o)
 	}
-	capEstimate := zap.HeaderSize + SizeNFTMintOperation +
-		len(in.SigIndices)*SigIndexStride + len(in.Payload) + ownersLen + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	sigIdxOff, sigIdxCount := writeSigIndices(b, in.SigIndices)
 
@@ -378,9 +376,8 @@ type NFTTransferOperationInput struct {
 
 // NewNFTTransferOperation builds an NFTTransferOperation wire envelope.
 func NewNFTTransferOperation(in NFTTransferOperationInput) []byte {
-	capEstimate := zap.HeaderSize + SizeNFTTransferOp +
-		len(in.SigIndices)*SigIndexStride + len(in.Output) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	sigIdxOff, sigIdxCount := writeSigIndices(b, in.SigIndices)
 
@@ -447,8 +444,8 @@ type OwnedOutputInput struct {
 
 // NewOwnedOutput builds an OwnedOutput wire envelope.
 func NewOwnedOutput(in OwnedOutputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeOwnedOutput + len(in.Addresses)*AddressStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	addrListOff, addrListCount := writeAddressList(b, in.Addresses)
 
@@ -519,8 +516,8 @@ type BurnOperationInput struct {
 
 // NewBurnOperation builds a BurnOperation wire envelope.
 func NewBurnOperation(in BurnOperationInput) []byte {
-	capEstimate := zap.HeaderSize + SizeBurnOperation + len(in.SigIndices)*SigIndexStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	sigIdxOff, sigIdxCount := writeSigIndices(b, in.SigIndices)
 

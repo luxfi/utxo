@@ -126,13 +126,11 @@ func WrapTransferableOut(b []byte) (TransferableOut, error) {
 // NewMintOutput / NewNFT*). The inner envelope's bytes are stored verbatim
 // in the Output field.
 func NewTransferableOut(assetID ids.ID, innerEnvelope []byte) []byte {
-	capEstimate := zap.HeaderSize + SizeTransferableOut + len(innerEnvelope) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	ob := b.StartObject(SizeTransferableOut)
-	for i := 0; i < 32; i++ {
-		ob.SetUint8(OffsetTransferableOut_AssetID+i, assetID[i])
-	}
+	ob.SetBytesFixed(OffsetTransferableOut_AssetID, assetID[:])
 	ob.SetBytes(OffsetTransferableOut_Output, innerEnvelope)
 	ob.FinishAsRoot()
 	return writeEnvelopePrefix(TypeKindReserved, ShapeKindTransferableOut, b.Finish())
@@ -264,17 +262,13 @@ func WrapTransferableIn(b []byte) (TransferableIn, error) {
 // Input envelope (from NewTransferInput). The inner envelope's bytes are
 // stored verbatim in the Input field.
 func NewTransferableIn(txID ids.ID, outputIndex uint32, assetID ids.ID, innerEnvelope []byte) []byte {
-	capEstimate := zap.HeaderSize + SizeTransferableIn + len(innerEnvelope) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	ob := b.StartObject(SizeTransferableIn)
-	for i := 0; i < 32; i++ {
-		ob.SetUint8(OffsetTransferableIn_TxID+i, txID[i])
-	}
+	ob.SetBytesFixed(OffsetTransferableIn_TxID, txID[:])
 	ob.SetUint32(OffsetTransferableIn_OutputIndex, outputIndex)
-	for i := 0; i < 32; i++ {
-		ob.SetUint8(OffsetTransferableIn_AssetID+i, assetID[i])
-	}
+	ob.SetBytesFixed(OffsetTransferableIn_AssetID, assetID[:])
 	ob.SetBytes(OffsetTransferableIn_Input, innerEnvelope)
 	ob.FinishAsRoot()
 	return writeEnvelopePrefix(TypeKindReserved, ShapeKindTransferableIn, b.Finish())

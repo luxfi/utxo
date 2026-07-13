@@ -74,8 +74,8 @@ type LockedOutputInput struct {
 
 // NewLockedOutput builds a LockedOutput wire envelope.
 func NewLockedOutput(in LockedOutputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeLockedOutput + len(in.TransferOutBytes) + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	ob := b.StartObject(SizeLockedOutput)
 	ob.SetUint64(OffsetLockedOutput_Locktime, in.Locktime)

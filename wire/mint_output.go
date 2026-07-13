@@ -108,8 +108,8 @@ type MintOutputInput struct {
 
 // NewMintOutput builds a MintOutput wire envelope.
 func NewMintOutput(in MintOutputInput) []byte {
-	capEstimate := zap.HeaderSize + SizeMintOutput + len(in.Addresses)*AddressStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	addrListOff, addrListCount := writeAddressList(b, in.Addresses)
 

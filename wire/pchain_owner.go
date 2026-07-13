@@ -97,8 +97,8 @@ type PChainOwnerInput struct {
 
 // NewPChainOwner builds a PChainOwner wire envelope.
 func NewPChainOwner(in PChainOwnerInput) []byte {
-	capEstimate := zap.HeaderSize + SizePChainOwner + len(in.Addresses)*AddressStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	addrListOff, addrListCount := writeAddressList(b, in.Addresses)
 

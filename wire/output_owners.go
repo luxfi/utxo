@@ -177,8 +177,8 @@ type OutputOwnersInput struct {
 
 // NewOutputOwners builds an OutputOwners wire envelope.
 func NewOutputOwners(in OutputOwnersInput) []byte {
-	capEstimate := zap.HeaderSize + SizeOutputOwners + len(in.Addresses)*AddressStride + 64
-	b := zap.NewBuilder(capEstimate)
+	b := zap.GetBuilder()
+	defer zap.PutBuilder(b)
 
 	// Write the address list first so its offset is known when the parent
 	// object's list pointer is set.
