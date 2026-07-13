@@ -148,11 +148,3 @@ func (kc *Keychain) Match(owners *OutputOwners, time uint64) ([]uint32, []*mldsa
 	}
 	return sigs, keys, uint32(len(keys)) == owners.Threshold
 }
-
-// get returns the raw private key for the given address
-func (kc Keychain) get(id ids.ShortID) (*mldsa.PrivateKey, bool) {
-	if i, ok := kc.addrToKeyIndex[id]; ok {
-		return kc.Keys[i], true
-	}
-	return nil, false
-}

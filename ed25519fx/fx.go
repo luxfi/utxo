@@ -134,7 +134,7 @@ func (fx *Fx) verifyOperation(tx UnsignedTx, op *MintOperation, cred *Credential
 	if err := verify.All(op, cred, utxo); err != nil {
 		return err
 	}
-	if !utxo.OutputOwners.Equals(&op.MintOutput.OutputOwners) {
+	if !utxo.Equals(&op.MintOutput.OutputOwners) {
 		return ErrWrongMintCreated
 	}
 	return fx.VerifyCredentials(tx, &op.MintInput, cred, &utxo.OutputOwners)

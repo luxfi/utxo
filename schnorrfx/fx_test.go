@@ -24,7 +24,7 @@ func newTestFx(t *testing.T) (*Fx, *btcec.PrivateKey, []byte, ids.ShortID) {
 	require.NoError(err)
 
 	vm := &TestVM{
-		Log:   log.NewNoOpLogger(),
+		Log: log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
 
@@ -52,7 +52,7 @@ func signSchnorr(t *testing.T, sk *btcec.PrivateKey, msg []byte) [SigLen]byte {
 
 func TestFxInitialize(t *testing.T) {
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Log: log.NewNoOpLogger(),
 	}
 	fx := Fx{}
 	require.NoError(t, fx.Initialize(&vm))

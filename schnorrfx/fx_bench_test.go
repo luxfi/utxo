@@ -28,7 +28,7 @@ func benchSetup(b *testing.B) (*Fx, *TransferOutput, *TransferInput, *Credential
 	}
 
 	vm := &TestVM{
-		Log:   log.NewNoOpLogger(),
+		Log: log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
 

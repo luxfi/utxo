@@ -264,7 +264,7 @@ func (s *utxoState) getIndexDB(addr []byte) linkeddb.LinkedDB {
 		return indexList
 	}
 
-	indexDB := prefixdb.NewNested(addr, s.indexDB)
+	indexDB := prefixdb.New(addr, s.indexDB)
 	indexList := linkeddb.NewDefault(indexDB)
 	s.indexCache.Put(addrStr, indexList)
 	return indexList

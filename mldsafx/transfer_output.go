@@ -41,5 +41,3 @@ func (out *TransferOutput) Verify() error {
 func (out *TransferOutput) Owners() interface{} {
 	return &out.OutputOwners
 }
-
-func (*TransferOutput) isState() {}

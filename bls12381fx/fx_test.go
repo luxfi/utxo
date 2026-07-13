@@ -23,7 +23,7 @@ func (t *testTx) Bytes() []byte { return t.b }
 func newTestFx(t *testing.T) *Fx {
 	t.Helper()
 	vm := &TestVM{
-		Log:   log.NewNoOpLogger(),
+		Log: log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
 	fx := &Fx{}
