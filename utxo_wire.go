@@ -49,7 +49,7 @@ func (u *UTXO) WireBytes() ([]byte, error) {
 	return wire.NewUTXO(wire.UTXOInput{
 		TxID:        u.TxID,
 		OutputIndex: u.OutputIndex,
-		AssetID:     u.Asset.ID,
+		AssetID:     u.ID,
 		Output:      outputBytes,
 	}), nil
 }

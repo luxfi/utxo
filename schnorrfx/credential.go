@@ -28,7 +28,7 @@ var (
 	ErrNilCredential    = errors.New("nil Schnorr credential")
 	ErrEmptyCredential  = errors.New("empty Schnorr credential")
 	ErrInvalidSignature = errors.New("invalid Schnorr signature")
-	ErrWrongSigLen      = errors.New("Schnorr signature wrong length")
+	ErrWrongSigLen      = errors.New("wrong Schnorr signature length")
 )
 
 // Credential contains BIP-340 Schnorr signatures for spending UTXOs.

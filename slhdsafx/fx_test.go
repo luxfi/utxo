@@ -24,7 +24,7 @@ func newTestFx(t *testing.T) (*Fx, *slhdsa.PrivateKey, []byte) {
 	require.NoError(err)
 
 	vm := &TestVM{
-		Log:   log.NewNoOpLogger(),
+		Log: log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
 
@@ -39,7 +39,7 @@ func newTestFx(t *testing.T) (*Fx, *slhdsa.PrivateKey, []byte) {
 
 func TestFxInitialize(t *testing.T) {
 	vm := TestVM{
-		Log:   log.NewNoOpLogger(),
+		Log: log.NewNoOpLogger(),
 	}
 	fx := Fx{}
 	require.NoError(t, fx.Initialize(&vm))
@@ -257,7 +257,7 @@ func TestFxVerifyTransferBootstrapping(t *testing.T) {
 	pkBytes := sk.PublicKey.Bytes()
 
 	vm := &TestVM{
-		Log:   log.NewNoOpLogger(),
+		Log: log.NewNoOpLogger(),
 	}
 	vm.Clk.Set(time.Date(2026, time.January, 1, 0, 0, 0, 0, time.UTC))
 

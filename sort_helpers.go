@@ -4,7 +4,6 @@
 package utxo
 
 import (
-	"cmp"
 	"slices"
 )
 
@@ -17,15 +16,6 @@ func sortByCompare[T interface{ Compare(T) int }](s []T) {
 func isSortedAndUniqueByCompare[T interface{ Compare(T) int }](s []T) bool {
 	for i := 1; i < len(s); i++ {
 		if s[i-1].Compare(s[i]) >= 0 {
-			return false
-		}
-	}
-	return true
-}
-
-func isSortedAndUniqueOrdered[T cmp.Ordered](s []T) bool {
-	for i := 1; i < len(s); i++ {
-		if s[i-1] >= s[i] {
 			return false
 		}
 	}

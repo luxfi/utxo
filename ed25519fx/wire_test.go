@@ -44,7 +44,7 @@ func TestWire_TransferOutput_RoundTrip(t *testing.T) {
 	if got.Amt != in.Amt {
 		t.Errorf("Amt: got %d, want %d", got.Amt, in.Amt)
 	}
-	if !in.OutputOwners.Equals(&got.OutputOwners) {
+	if !in.Equals(&got.OutputOwners) {
 		t.Errorf("OutputOwners mismatch")
 	}
 }

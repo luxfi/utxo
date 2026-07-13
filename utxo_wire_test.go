@@ -73,7 +73,7 @@ func TestUTXO_WireBytes_Secp256k1_TransferOutput_RoundTrip(t *testing.T) {
 	if gotOut.Amt != inOut.Amt {
 		t.Errorf("Out.Amt: got %d, want %d", gotOut.Amt, inOut.Amt)
 	}
-	if !gotOut.OutputOwners.Equals(&inOut.OutputOwners) {
+	if !gotOut.Equals(&inOut.OutputOwners) {
 		t.Errorf("Out.OutputOwners mismatch")
 	}
 }
