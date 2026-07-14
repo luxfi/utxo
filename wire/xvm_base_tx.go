@@ -3,57 +3,45 @@
 
 package wire
 
-import "github.com/luxfi/zap"
+import (
+	"github.com/luxfi/ids"
+	"github.com/luxfi/zap"
+)
 
-// XVMBaseTx is the X-chain BaseTx wire envelope. It is the ZAP-native
-// replacement for the reflection-encoded `xvm/txs.BaseTx` (which embedded
-// `utxo.BaseTx` with `serialize:"true"` tags and round-tripped through
-// pcodecs.Manager).
+// XVMBaseTx is the X-chain BaseTx wire object — the ZAP-native replacement for
+// the reflection-encoded `xvm/txs.BaseTx`.
 //
-// Fields:
+// NATIVE-NESTED FORM: the outputs and inputs are AddObjectPtr object-lists —
+// each element is a TransferableOut/In object living INLINE in this same
+// buffer, reached by a 4-byte signed pointer slot. There are no per-container
+// TypeKind/ShapeKind prefixes, no blob concatenation, and no parallel length
+// list: the object-ptr list is the native "repeated message" encoding. The
+// inner fx Output/Input envelope (which DOES carry an fx discriminator, since
+// polymorphism lives there) is stored zero-copy in the leaf object's bytes
+// field.
 //
-//	NetworkID    uint32  — network this chain lives on
-//	BlockchainID 32B     — chain id (replay-protection)
-//	Outs         []TransferableOut  (AssetID + inner fx Output)
-//	Ins          []TransferableIn   (UTXOID + AssetID + inner fx Input)
-//	Memo         bytes   — arbitrary, up to MaxMemoSize on the verifier
-//
-// X-Chain is multi-asset: each out/in is a TransferableOut / TransferableIn
-// envelope that NAMES the asset it moves (the inner fx Output/Input carries
-// the owning fx TypeKind). See wire/transferable.go.
-//
-// Outs/Ins are variable-stride byte envelopes (each carries its own
-// TypeKind+ShapeKind+ZAP message of independent length). The list is
-// encoded as `Count uint32 + Bytes (concatenated envelopes)` — the same
-// pattern SignedTx uses for its Credentials list. Walking is O(i)
-// because each ZAP envelope carries its own length in the wire header.
-//
-// Fixed-section layout (size 68 bytes; 4 + 32 + 4 + 8 + 4 + 8 + 8):
-//
-//	NetworkID    uint32 @ 0
-//	BlockchainID 32B    @ 4
-//	OutsCount    uint32 @ 36
-//	OutsBytes    bytes  @ 40   (8 bytes — relOffset + length)
-//	InsCount     uint32 @ 48
-//	InsBytes     bytes  @ 52   (8 bytes — relOffset + length)
-//	Memo         bytes  @ 60   (8 bytes — relOffset + length)
+//	NetworkID    uint32     @ 0
+//	BlockchainID 32B        @ 8   (8-aligned)
+//	Outs         objptrlist @ 40  (relOffset + count, 8 bytes)
+//	Ins          objptrlist @ 48  (relOffset + count, 8 bytes)
+//	Memo         bytes      @ 56  (relOffset + length, 8 bytes)
 const (
-	OffsetXVMBaseTx_NetworkID    = 0  // uint32
-	OffsetXVMBaseTx_BlockchainID = 4  // 32B
-	OffsetXVMBaseTx_OutsCount    = 36 // uint32
-	OffsetXVMBaseTx_OutsBytes    = 40 // bytes (8 bytes)
-	OffsetXVMBaseTx_InsCount     = 48 // uint32
-	OffsetXVMBaseTx_InsBytes     = 52 // bytes (8 bytes)
-	OffsetXVMBaseTx_Memo         = 60 // bytes (8 bytes)
-	SizeXVMBaseTx                = 68
+	OffsetXVMBaseTx_NetworkID    = 0
+	OffsetXVMBaseTx_BlockchainID = 8
+	OffsetXVMBaseTx_Outs         = 40
+	OffsetXVMBaseTx_Ins          = 48
+	OffsetXVMBaseTx_Memo         = 56
+	SizeXVMBaseTx                = 64
+
+	// objPtrStride is the per-element width of an AddObjectPtr list (a 4-byte
+	// signed relative pointer).
+	objPtrStride = 4
 )
 
 // XVMBaseTx is the zero-copy typed accessor.
 //
 // READ-ONLY: every accessor aliases the underlying ZAP buffer. Mutation
-// corrupts any TxID = hash(buffer) computed downstream. Use append(
-// []byte(nil), ...) to take ownership when handing bytes to another
-// goroutine.
+// corrupts any TxID = hash(buffer) computed downstream.
 type XVMBaseTx struct {
 	b   []byte
 	msg *zap.Message
@@ -67,59 +55,44 @@ func (t XVMBaseTx) NetworkID() uint32 {
 
 // BlockchainID returns the 32-byte chain id.
 func (t XVMBaseTx) BlockchainID() [32]byte {
-	var out [32]byte
-	for i := 0; i < 32; i++ {
-		out[i] = t.obj.Uint8(OffsetXVMBaseTx_BlockchainID + i)
-	}
-	return out
+	return [32]byte(t.obj.BytesFixedSlice(OffsetXVMBaseTx_BlockchainID, 32))
 }
 
 // OutsCount returns the number of transferable outputs.
 func (t XVMBaseTx) OutsCount() uint32 {
-	return t.obj.Uint32(OffsetXVMBaseTx_OutsCount)
+	return uint32(t.obj.ListStride(OffsetXVMBaseTx_Outs, objPtrStride).Len())
 }
 
-// OutsBytes returns the concatenated TransferableOut envelopes blob.
-// Each entry is a self-describing wire envelope; see OutAt for the
-// index walk.
-//
-// READ-ONLY: aliases the underlying buffer.
-func (t XVMBaseTx) OutsBytes() []byte {
-	return t.obj.Bytes(OffsetXVMBaseTx_OutsBytes)
-}
-
-// OutAt parses the i'th TransferableOut envelope (AssetID + inner fx
-// Output). Callers get the AssetID via the returned accessor — X-Chain is
-// multi-asset, so every output names the asset it moves.
+// OutAt returns the i'th TransferableOut (AssetID + inner fx Output). X-Chain
+// is multi-asset, so every output names the asset it moves.
 func (t XVMBaseTx) OutAt(i uint32) (TransferableOut, error) {
-	env, err := nthEnvelope(t.OutsBytes(), t.OutsCount(), i)
-	if err != nil {
-		return TransferableOut{}, err
+	l := t.obj.ListStride(OffsetXVMBaseTx_Outs, objPtrStride)
+	if int(i) >= l.Len() {
+		return TransferableOut{}, ErrShortEnvelope
 	}
-	return WrapTransferableOut(env)
+	o := l.ObjectPtr(int(i))
+	if o.IsNull() {
+		return TransferableOut{}, ErrShortEnvelope
+	}
+	return transferableOutAt(t.msg, o), nil
 }
 
 // InsCount returns the number of transferable inputs.
 func (t XVMBaseTx) InsCount() uint32 {
-	return t.obj.Uint32(OffsetXVMBaseTx_InsCount)
+	return uint32(t.obj.ListStride(OffsetXVMBaseTx_Ins, objPtrStride).Len())
 }
 
-// InsBytes returns the concatenated TransferableIn envelopes blob.
-//
-// READ-ONLY: aliases the underlying buffer.
-func (t XVMBaseTx) InsBytes() []byte {
-	return t.obj.Bytes(OffsetXVMBaseTx_InsBytes)
-}
-
-// InAt parses the i'th TransferableIn envelope (UTXOID + AssetID + inner fx
-// Input). Callers get the spent UTXO reference + AssetID via the returned
-// accessor.
+// InAt returns the i'th TransferableIn (UTXOID + AssetID + inner fx Input).
 func (t XVMBaseTx) InAt(i uint32) (TransferableIn, error) {
-	env, err := nthEnvelope(t.InsBytes(), t.InsCount(), i)
-	if err != nil {
-		return TransferableIn{}, err
+	l := t.obj.ListStride(OffsetXVMBaseTx_Ins, objPtrStride)
+	if int(i) >= l.Len() {
+		return TransferableIn{}, ErrShortEnvelope
 	}
-	return WrapTransferableIn(env)
+	o := l.ObjectPtr(int(i))
+	if o.IsNull() {
+		return TransferableIn{}, ErrShortEnvelope
+	}
+	return transferableInAt(t.msg, o), nil
 }
 
 // Memo returns the memo bytes.
@@ -129,21 +102,14 @@ func (t XVMBaseTx) Memo() []byte {
 	return t.obj.Bytes(OffsetXVMBaseTx_Memo)
 }
 
-// Bytes returns the full wire envelope (2-byte discriminator prefix +
-// ZAP message). Stable across calls — backed by the originally-parsed
-// buffer. ZAP-native: no marshal step, no allocation.
-func (t XVMBaseTx) Bytes() []byte {
-	return t.b
-}
+// Bytes returns the full wire envelope (2-byte discriminator prefix + ZAP
+// message). Stable across calls — backed by the originally-parsed buffer.
+func (t XVMBaseTx) Bytes() []byte { return t.b }
 
 // IsZero reports whether the accessor wraps a parsed message.
 func (t XVMBaseTx) IsZero() bool { return t.msg == nil }
 
 // WrapXVMBaseTx parses an XVM BaseTx wire envelope into a typed accessor.
-//
-// Returns ErrShortEnvelope when the buffer is shorter than the 2-byte
-// discriminator prefix; ErrWrongShapeKind when the prefix names a
-// non-XVMBaseTx shape.
 func WrapXVMBaseTx(b []byte) (XVMBaseTx, error) {
 	_, sk, zapBytes, err := readEnvelopePrefix(b)
 	if err != nil {
@@ -159,83 +125,67 @@ func WrapXVMBaseTx(b []byte) (XVMBaseTx, error) {
 	return XVMBaseTx{b: b, msg: msg, obj: msg.Root()}, nil
 }
 
-// XVMBaseTxInput is the constructor input. Outs/Ins are already-built
-// TransferableOutput / TransferableInput envelopes (from
-// NewTransferOutput / NewTransferInput) — the constructor concatenates
-// them verbatim.
+// XVMTransferOut is one output: an AssetID plus the already-built inner fx
+// Output envelope (from NewTransferOutput / NewMintOutput / NewNFT*).
+type XVMTransferOut struct {
+	AssetID ids.ID
+	Output  []byte
+}
+
+// XVMTransferIn is one input: a spent-UTXO reference plus the already-built
+// inner fx Input envelope (from NewTransferInput).
+type XVMTransferIn struct {
+	TxID        ids.ID
+	OutputIndex uint32
+	AssetID     ids.ID
+	Input       []byte
+}
+
+// XVMBaseTxInput is the constructor input.
 type XVMBaseTxInput struct {
 	NetworkID    uint32
 	BlockchainID [32]byte
-	Outs         [][]byte
-	Ins          [][]byte
+	Outs         []XVMTransferOut
+	Ins          []XVMTransferIn
 	Memo         []byte
 }
 
-// NewXVMBaseTx builds an XVM BaseTx wire envelope.
+// NewXVMBaseTx builds an XVM BaseTx wire envelope with native-nested out/in
+// object lists — one buffer, one Finish, zero per-container prefix, zero blob
+// concatenation.
 func NewXVMBaseTx(in XVMBaseTxInput) []byte {
-	outsTotal := 0
-	for _, o := range in.Outs {
-		outsTotal += len(o)
-	}
-	insTotal := 0
-	for _, i := range in.Ins {
-		insTotal += len(i)
-	}
-	outsBlob := make([]byte, 0, outsTotal)
-	for _, o := range in.Outs {
-		outsBlob = append(outsBlob, o...)
-	}
-	insBlob := make([]byte, 0, insTotal)
-	for _, i := range in.Ins {
-		insBlob = append(insBlob, i...)
-	}
-
 	b := zap.GetBuilder()
 	defer zap.PutBuilder(b)
 
+	// 1. tail each Transferable object; collect absolute offsets.
+	outOffs := make([]int, len(in.Outs))
+	for i := range in.Outs {
+		outOffs[i] = appendTransferableOut(b, in.Outs[i].AssetID, in.Outs[i].Output)
+	}
+	inOffs := make([]int, len(in.Ins))
+	for i := range in.Ins {
+		inOffs[i] = appendTransferableIn(b, in.Ins[i].TxID, in.Ins[i].OutputIndex, in.Ins[i].AssetID, in.Ins[i].Input)
+	}
+
+	// 2. object-ptr lists over those offsets.
+	ol := b.StartList(objPtrStride)
+	for _, off := range outOffs {
+		ol.AddObjectPtr(off)
+	}
+	outsOff, outsLen := ol.Finish()
+	il := b.StartList(objPtrStride)
+	for _, off := range inOffs {
+		il.AddObjectPtr(off)
+	}
+	insOff, insLen := il.Finish()
+
+	// 3. root object.
 	ob := b.StartObject(SizeXVMBaseTx)
 	ob.SetUint32(OffsetXVMBaseTx_NetworkID, in.NetworkID)
 	ob.SetBytesFixed(OffsetXVMBaseTx_BlockchainID, in.BlockchainID[:])
-	ob.SetUint32(OffsetXVMBaseTx_OutsCount, uint32(len(in.Outs)))
-	ob.SetBytes(OffsetXVMBaseTx_OutsBytes, outsBlob)
-	ob.SetUint32(OffsetXVMBaseTx_InsCount, uint32(len(in.Ins)))
-	ob.SetBytes(OffsetXVMBaseTx_InsBytes, insBlob)
+	ob.SetList(OffsetXVMBaseTx_Outs, outsOff, outsLen)
+	ob.SetList(OffsetXVMBaseTx_Ins, insOff, insLen)
 	ob.SetBytes(OffsetXVMBaseTx_Memo, in.Memo)
 	ob.FinishAsRoot()
 	return writeEnvelopePrefix(TypeKindReserved, ShapeKindXVMBaseTx, b.Finish())
-}
-
-// nthEnvelope returns the i'th envelope from a concatenated blob of
-// (TypeKind+ShapeKind+ZAP message) wire envelopes. The per-envelope ZAP
-// header carries the envelope's own length so the walk is O(i).
-//
-// This mirrors SignedTx.CredentialAt's parser — same wire convention.
-func nthEnvelope(blob []byte, count uint32, i uint32) ([]byte, error) {
-	if i >= count {
-		return nil, ErrWrongShapeKind
-	}
-	cursor := 0
-	for k := uint32(0); k <= i; k++ {
-		if cursor+EnvelopePrefix > len(blob) {
-			return nil, ErrShortEnvelope
-		}
-		zapStart := cursor + EnvelopePrefix
-		if zapStart+zap.HeaderSize > len(blob) {
-			return nil, ErrShortEnvelope
-		}
-		// ZAP header Size is little-endian uint32 at offset 12.
-		zapSize := int(blob[zapStart+12]) |
-			int(blob[zapStart+13])<<8 |
-			int(blob[zapStart+14])<<16 |
-			int(blob[zapStart+15])<<24
-		envEnd := zapStart + zapSize
-		if envEnd > len(blob) {
-			return nil, ErrShortEnvelope
-		}
-		if k == i {
-			return blob[cursor:envEnd], nil
-		}
-		cursor = envEnd
-	}
-	return nil, ErrWrongShapeKind
 }
