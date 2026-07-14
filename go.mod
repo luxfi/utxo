@@ -21,7 +21,7 @@ require (
 	github.com/luxfi/timer v1.0.2
 	github.com/luxfi/utils v1.1.5
 	github.com/luxfi/vm v1.2.0
-	github.com/luxfi/zap v1.2.2
+	github.com/luxfi/zap v1.2.3
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
 )

@@ -35,13 +35,13 @@ func BenchmarkComposite_XVMBaseTx(b *testing.B) {
 	b.ReportAllocs()
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		outs := make([][]byte, 2)
+		outs := make([]wire.XVMTransferOut, 2)
 		for j := range outs {
-			outs[j] = wire.NewTransferableOut(assetID, out.Bytes())
+			outs[j] = wire.XVMTransferOut{AssetID: assetID, Output: out.Bytes()}
 		}
-		ins := make([][]byte, 2)
+		ins := make([]wire.XVMTransferIn, 2)
 		for j := range ins {
-			ins[j] = wire.NewTransferableIn(txID, uint32(j), assetID, in.Bytes())
+			ins[j] = wire.XVMTransferIn{TxID: txID, OutputIndex: uint32(j), AssetID: assetID, Input: in.Bytes()}
 		}
 		env := wire.NewXVMBaseTx(wire.XVMBaseTxInput{
 			NetworkID:    1,
