@@ -160,11 +160,11 @@ func NewXVMBaseTx(in XVMBaseTxInput) []byte {
 	// 1. tail each Transferable object; collect absolute offsets.
 	outOffs := make([]int, len(in.Outs))
 	for i := range in.Outs {
-		outOffs[i] = appendTransferableOut(b, in.Outs[i].AssetID, in.Outs[i].Output)
+		outOffs[i] = AppendTransferableOut(b, in.Outs[i].AssetID, in.Outs[i].Output)
 	}
 	inOffs := make([]int, len(in.Ins))
 	for i := range in.Ins {
-		inOffs[i] = appendTransferableIn(b, in.Ins[i].TxID, in.Ins[i].OutputIndex, in.Ins[i].AssetID, in.Ins[i].Input)
+		inOffs[i] = AppendTransferableIn(b, in.Ins[i].TxID, in.Ins[i].OutputIndex, in.Ins[i].AssetID, in.Ins[i].Input)
 	}
 
 	// 2. object-ptr lists over those offsets.
