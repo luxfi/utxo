@@ -47,6 +47,15 @@ func transferableOutAt(msg *zap.Message, obj zap.Object) TransferableOut {
 	return TransferableOut{msg: msg, obj: obj}
 }
 
+// TransferableOutFromObject wraps a nested TransferableOut object reached from
+// a parent AddObjectPtr list slot (e.g. ExportTx's ExportedOuts list). msg is
+// the parent message (obj.Message()); obj is the list element from
+// List.ObjectPtr. This is the exported reader every native-nested carrier of
+// TransferableOut objects uses — one way to read a nested transferable.
+func TransferableOutFromObject(msg *zap.Message, obj zap.Object) TransferableOut {
+	return TransferableOut{msg: msg, obj: obj}
+}
+
 // AssetID returns the asset identifier this output moves.
 func (t TransferableOut) AssetID() ids.ID {
 	return ids.ID(t.obj.BytesFixedSlice(OffsetTransferableOut_AssetID, 32))
@@ -98,6 +107,12 @@ func transferableInAt(msg *zap.Message, obj zap.Object) TransferableIn {
 	return TransferableIn{msg: msg, obj: obj}
 }
 
+// TransferableInFromObject wraps a nested TransferableIn object reached from a
+// parent AddObjectPtr list slot (e.g. ImportTx's ImportedIns list).
+func TransferableInFromObject(msg *zap.Message, obj zap.Object) TransferableIn {
+	return TransferableIn{msg: msg, obj: obj}
+}
+
 // TxID returns the spent UTXO's tx id.
 func (t TransferableIn) TxID() ids.ID {
 	return ids.ID(t.obj.BytesFixedSlice(OffsetTransferableIn_TxID, 32))
@@ -136,19 +151,20 @@ func (t TransferableIn) IsZero() bool { return t.msg == nil }
 
 // ---- inline builders (write a Transferable object into an open builder) ----
 
-// appendTransferableOut writes a TransferableOut object into b and returns its
+// AppendTransferableOut writes a TransferableOut object into b and returns its
 // offset (for an AddObjectPtr slot). The inner fx Output envelope bytes are
-// stored zero-copy in the Output field.
-func appendTransferableOut(b *zap.Builder, assetID ids.ID, innerEnvelope []byte) int {
+// stored zero-copy in the Output field. Exported so any native-nested carrier
+// (XVMBaseTx here, ExportTx in node) nests a transferable ONE way.
+func AppendTransferableOut(b *zap.Builder, assetID ids.ID, innerEnvelope []byte) int {
 	ob := b.StartObject(SizeTransferableOut)
 	ob.SetBytesFixed(OffsetTransferableOut_AssetID, assetID[:])
 	ob.SetBytes(OffsetTransferableOut_Output, innerEnvelope)
 	return ob.Finish()
 }
 
-// appendTransferableIn writes a TransferableIn object into b and returns its
+// AppendTransferableIn writes a TransferableIn object into b and returns its
 // offset.
-func appendTransferableIn(b *zap.Builder, txID ids.ID, outputIndex uint32, assetID ids.ID, innerEnvelope []byte) int {
+func AppendTransferableIn(b *zap.Builder, txID ids.ID, outputIndex uint32, assetID ids.ID, innerEnvelope []byte) int {
 	ob := b.StartObject(SizeTransferableIn)
 	ob.SetBytesFixed(OffsetTransferableIn_TxID, txID[:])
 	ob.SetUint32(OffsetTransferableIn_OutputIndex, outputIndex)
