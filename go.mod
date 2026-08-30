@@ -5,7 +5,7 @@ go 1.26.4
 require (
 	github.com/btcsuite/btcd/btcec/v2 v2.1.3
 	github.com/luxfi/address v1.1.1
-	github.com/luxfi/api v1.1.1
+	github.com/luxfi/api v1.1.9
 	github.com/luxfi/cache v1.3.1
 	github.com/luxfi/constants v1.6.2
 	github.com/luxfi/crypto v1.20.2
@@ -20,7 +20,7 @@ require (
 	github.com/luxfi/runtime v1.3.1
 	github.com/luxfi/timer v1.1.1
 	github.com/luxfi/utils v1.3.1
-	github.com/luxfi/vm v1.3.1
+	github.com/luxfi/vm v1.3.14
 	github.com/luxfi/zap v1.2.6
 	github.com/stretchr/testify v1.11.1
 	go.uber.org/mock v0.6.0
@@ -60,6 +60,7 @@ require (
 	github.com/mr-tron/base58 v1.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/supranational/blst v0.3.16 // indirect
+	github.com/zap-proto/go v1.3.0 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
 	golang.org/x/exp v0.0.0-20260529124908-c761662dc8c9 // indirect
 	golang.org/x/mod v0.36.0 // indirect
