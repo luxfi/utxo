@@ -9,9 +9,9 @@ require (
 	github.com/luxfi/cache v1.3.1
 	github.com/luxfi/constants v1.6.2
 	github.com/luxfi/crypto v1.20.2
-	github.com/luxfi/database v1.21.1
+	github.com/luxfi/database v1.21.5
 	github.com/luxfi/formatting v1.1.1
-	github.com/luxfi/geth v1.20.1
+	github.com/luxfi/geth v1.20.2
 	github.com/luxfi/ids v1.3.2
 	github.com/luxfi/keychain v1.1.1
 	github.com/luxfi/log v1.4.3
@@ -23,6 +23,7 @@ require (
 	github.com/luxfi/vm v1.3.14
 	github.com/luxfi/zap v1.2.6
 	github.com/stretchr/testify v1.11.1
+	github.com/zap-proto/go v1.3.0
 	go.uber.org/mock v0.6.0
 )
 
@@ -43,8 +44,8 @@ require (
 	github.com/luxfi/atomic v1.0.0 // indirect
 	github.com/luxfi/compress v0.1.1 // indirect
 	github.com/luxfi/concurrent v0.1.1 // indirect
-	github.com/luxfi/consensus v1.36.2 // indirect
-	github.com/luxfi/container v0.2.1 // indirect
+	github.com/luxfi/consensus v1.36.81 // indirect
+	github.com/luxfi/container v0.2.2 // indirect
 	github.com/luxfi/math/big v0.1.0 // indirect
 	github.com/luxfi/mdns v0.1.1 // indirect
 	github.com/luxfi/mock v0.1.1 // indirect
@@ -60,7 +61,6 @@ require (
 	github.com/mr-tron/base58 v1.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/supranational/blst v0.3.16 // indirect
-	github.com/zap-proto/go v1.3.0 // indirect
 	golang.org/x/crypto v0.52.0 // indirect
 	golang.org/x/exp v0.0.0-20260529124908-c761662dc8c9 // indirect
 	golang.org/x/mod v0.36.0 // indirect
