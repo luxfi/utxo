@@ -19,7 +19,7 @@ require (
 	github.com/luxfi/metric v1.8.1
 	github.com/luxfi/runtime v1.3.1
 	github.com/luxfi/timer v1.1.1
-	github.com/luxfi/utils v1.3.1
+	github.com/luxfi/util v1.3.4
 	github.com/luxfi/vm v1.3.14
 	github.com/luxfi/zap v1.2.6
 	github.com/stretchr/testify v1.11.1
@@ -52,6 +52,7 @@ require (
 	github.com/luxfi/p2p v1.22.1 // indirect
 	github.com/luxfi/pq v1.1.0 // indirect
 	github.com/luxfi/sampler v1.1.0 // indirect
+	github.com/luxfi/utils v1.3.1 // indirect
 	github.com/luxfi/validators v1.3.1 // indirect
 	github.com/luxfi/version v1.0.1 // indirect
 	github.com/luxfi/warp v1.24.1 // indirect
